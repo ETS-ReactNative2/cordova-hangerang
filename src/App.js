@@ -1,26 +1,33 @@
 import React, { Component } from 'react';
-import logo from './logo.png';
-import './App.css';
-import firebase, { auth, provider } from './firebase.js';
-import Moment from 'react-moment';
-import { StaticGoogleMap, Marker } from 'react-static-google-map';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { CSSTransitionGroup } from 'react-transition-group';
+
+import logo from './assets/logo.png';
+//import orange from './assets/orange.png';
+import './assets/App.css';
+
+import {geolocated} from 'react-geolocated';
+import firebase, { auth, provider, base } from './components/firebase.js';
+import GeoFire from 'geofire';
+
+import Scroll from 'react-scroll';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import Material from 'material-ui';
 import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import DateTimePicker from 'material-ui-datetimepicker';
 import DatePickerDialog from 'material-ui/DatePicker/DatePickerDialog'
 import TimePickerDialog from 'material-ui/TimePicker/TimePickerDialog';
-import GoogleSuggest from './places.js';
-import HangMembers from './hangcrew.js';
 
-  const mapstyle = "feature:all|element:labels|visibility:on&style=feature:landscape|element:all|weight:0.5|visibility:on&style=feature:poi|element:geometry.fill|visibility:on|color:0x83cead&style=feature:poi.park|element:geometry.fill|visibility:on|color:0x83cead&style=feature:road|element:all|visibility:on|color:0xffffff&style=feature:road|element:labels|visibility:on&style=feature:road.highway|element:all|visibility:on|color:0xfee379&style=feature:road.arterial|element:all|visibility:on|color:0xfee379&style=feature:water|element:all|visibility:on|color:0x7fc8ed";
+import Geolocated from './components/geolocated.js';
+import GoogleSuggest from './components/places.js';
+import HangItem from './components/hangitem.js';
+import HangDetail from './components/hangdetail.js';
+import BottomNav from './components/bottomnav.js';
+
+var scroll = Scroll.animateScroll;
+var scroller = Scroll.scroller;
+var Element = Scroll.Element;
 
 class App extends Component {
-
   constructor() {
     super();
     this.state = {
@@ -30,16 +37,35 @@ class App extends Component {
       userphoto: '',
       datetime: '',
       location: '',
-      hangs: []
+      name: '',
+      token: '',
+      hangs: [],
+      submit: false,
+      newitem: '',
+      mountID: '',
+      makeHang: false,
+      ulat: '',
+      ulng: ''
     }
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.onHangChange = this.onHangChange.bind(this);
+    this.clearSubmit = this.clearSubmit.bind(this);
+    this.toggleForm = this.toggleForm.bind(this);
+    this.toggleSubmit = this.toggleSubmit.bind(this);
+    this.setUserLocation = this.setUserLocation.bind(this);
   }
 
   setDate = (datetime) => this.setState({ datetime })
   setLocation = (suggest) => this.setState({ location: suggest })
+  setName = (original) => this.setState({ name: original })
+  setSubmit = (submit) => this.setState({ submit: false })
+
+  hashCode = function(s){
+    return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+  }
 
   handleChange(e) {
     this.setState({
@@ -50,7 +76,9 @@ class App extends Component {
   handleSubmit(e) {
     e.preventDefault();
     const hangsRef = firebase.database().ref('hangs');
+    const itemHash = 'h'+this.hashCode(this.state.title+''+this.state.datetime);
     const hang = {
+      hash: itemHash,
       title: this.state.title,
       uid: this.state.user.uid,
       user: this.state.user.displayName,
@@ -61,13 +89,25 @@ class App extends Component {
       lng: this.state.location.geometry.location.lng(),
       address: this.state.location.formatted_address,
       place: this.state.location.place_id,
+      placename: this.state.name,
     }
-    hangsRef.push(hang);
+    hangsRef.push(hang).then((snap) => {
+     let key = snap.key;
+     let geoLocationRef = firebase.database().ref('hangs-gl');
+     let geoFire = new GeoFire(geoLocationRef);
+     geoFire.set(key, [hang.lat, hang.lng]).then(function() {
+       console.log("Hang with key:"+key+" added to database");
+       }, function(error) {
+       console.log("Error: " + error);
+     });
+    })
     this.setState({
       title: '',
       username: '',
       datetime: '',
       location: '',
+      submit: true,
+      newitem: itemHash
     });
   }
 
@@ -84,7 +124,6 @@ class App extends Component {
     auth.signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
-        this.setState({user});
         const usersRef = firebase.database().ref('users');
         const u = {
           email: user.email,
@@ -92,7 +131,14 @@ class App extends Component {
           name: user.displayName,
           userphoto: user.photoURL,
           uid: user.uid,
+          token: result.credential.accessToken
         }
+        this.setState({
+          user : user,
+          username: user.displayName,
+          userphoto: user.photoURL,
+          token: result.credential.accessToken
+        });
         usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', function(snapshot){
           if (snapshot.exists()) {
             console.log('user already exists');
@@ -103,129 +149,227 @@ class App extends Component {
       });
   }
 
-  componentDidMount() {
+  setUserLocation(lat,lng) {
+    let usersRef = firebase.database().ref('users-gl');
+    let usersGeoRef = firebase.database().ref('users-gl');
+    let geoUser = new GeoFire(usersGeoRef);
+    usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', function(snapshot){
+      if (snapshot.exists()) {
+        var key = Object.keys(snapshot.val())[0];
+        geoUser.set(key, [lat, lng]).then(function() {
+            console.log("User with key:"+key+" and location ["+lat+","+lng+"] been added to Database");
+          }, function(error) {
+          console.log("Error: " + error);
+        });
+      }
+    });
+
+    let hangsRef = firebase.database().ref('hangs-gl');
+    let geoHang = new GeoFire(hangsRef);
+    let geoQuery = geoHang.query({
+      center: [lat, lng],
+      radius: 16
+    });
+    geoQuery.on("key_entered", function(key, location, distance){
+      console.log(key + ', ' + location + ', ' + distance);
+    });
+
+  }
+
+  onHangChange(hangid) {
+    const hangRef = firebase.database().ref(`/hangs/${hangid}`);
+    hangRef.once('value', (snapshot) => {
+       let newhang = snapshot.val();
+       this.setState({ hang: newhang });
+     });
+  }
+
+  componentWillMount() {
     auth.onAuthStateChanged((user) => {
       if (user) {
         this.setState({ user });
-      }
-    });
-
-    const hangsRef = firebase.database().ref('hangs');
-
-    hangsRef.on('value', (snapshot) => {
-      let hangs = snapshot.val();
-      let newState = [];
-      for (let hang in hangs) {
-        newState.push({
-          id: hang,
-          title: hangs[hang].title,
-          uid: hangs[hang].uid,
-          user: hangs[hang].user,
-          userphoto: hangs[hang].userphoto,
-          datetime: hangs[hang].datetime,
-          lat: hangs[hang].lat,
-          lng: hangs[hang].lng,
-          crew: hangs[hang].crew,
+        const usersRef = firebase.database().ref('users');
+        usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            var user = snapshot.val();
+            Object.entries(user).map((u) => {
+              var token = u[1]['token'];
+              this.setState({ token: token });
+              return token;
+            });
+          }
         });
       }
-      this.setState({
-        hangs: newState
+    });
+  }
+
+  componentDidMount() {
+    var id = setInterval(() => {
+      this.setState({ mountID: id });
+      base.syncState(`hangs`, {
+        context: this,
+        state: 'hangs',
+        asArray: true,
+        keepKeys: true,
+        queries: {
+          orderByChild: 'timestamp',
+          startAt: Date.now()
+        }
       });
+    }, 3000);
+
+    let gl = new geolocated({
+      positionOptions: {
+        enableHighAccuracy: false,
+      },
+      userDecisionTimeout: 8000,
     });
   }
 
-  joinHang(hang, user, uid) {
-    const crewRef = firebase.database().ref(`/hangs/${hang}/crew/`);
-    const member = {
-      uid: this.state.user.uid,
-      user: this.state.user.displayName,
-      userphoto: this.state.user.photoURL,
+  componentDidUpdate() {
+    if(this.newItem){
+      var header = document.getElementsByTagName('header')[0];
+      //var elem = document.getElementsByClassName('add-hang-fixed')[0];
+      var offset = header.offsetHeight;
+      scroller.scrollTo('newItem', {
+        duration: 1500,
+        delay: 100,
+        offset: (offset * -1) - 20,
+        smooth: "easeInOutQuint",
+      })
     }
-    crewRef.orderByChild("uid").equalTo(uid).once('value', function(snapshot){
-      if (snapshot.exists()) {
-        console.log('already added to hang');
-      }else{
-        crewRef.push(member);
-      }
-    });
   }
 
-  removeHang(hangId) {
-    const hangRef = firebase.database().ref(`/hangs/${hangId}`);
-    hangRef.remove();
+  toggleSubmit() {
+    if( this.state.submit === false || this.state.submit === '' ){
+      this.setState({ submit: true });
+    }else{
+      this.setState({ newitem: '' });
+      this.setState({ makeHang: false });
+      this.setState({ submit: false });
+      scroll.scrollTo(0);
+    }
+  }
+
+  clearSubmit() {
+    if( this.state.submit ){
+      this.setState({ submit: false });
+    }
+  }
+
+  toggleForm() {
+    if( this.state.makeHang ){
+      this.setState({ makeHang: false });
+    }else{
+      this.setState({ makeHang: true });
+    }
   }
 
   render() {
+    const Hangs = this.state.hangs.map((hang) => {
+      if(hang.hash === this.state.newitem){
+        return (
+          <Element name="newItem" className="hang-item" key={hang.key} tabIndex="-1"  ref={section => this.newItem = section}>
+            <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+          </Element>
+        )
+      }else{
+        return (
+          <section className="hang-item" key={hang.key}>
+            <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+          </section>
+        )
+      }
+    });
+
     return (
-      <div className='app'>
+      <div className='dashboard'>
         <header>
             <div className="wrapper">
               <div className="brand">
               <img src={logo} alt="Hangerang" />
               <h1>Hangerang</h1>
               </div>
-              {this.state.user ?
-                <button className="btn" onClick={this.logout}>Log Out</button>
-                :
-                <button className="btn" onClick={this.login}>Log In</button>
-              }
+                {this.state.user ?
+                <div className='user-profile'>
+                  <div className='user-profile-wrapper'>
+                  <img src={this.state.user.photoURL} alt={"Profile Picture for:"+this.state.user.displayName} />
+                  <h4>{this.state.user.displayName}</h4>
+                  </div>
+                  <button className="btn" onClick={this.logout}><i className="fa fa-sign-out"></i><span>Log Out</span></button>
+                </div> : <div className='user-profile user-logged-out'><button className="btn" onClick={this.login}><i className="fa fa-sign-in"></i><span>Log In</span></button></div>
+                }
             </div>
         </header>
         {this.state.user ?
-        <div className='container'>
-          <section className='add-hang'>
-                  <div className='user-profile'>
-                    <img src={this.state.user.photoURL} />
-                    <h3>{this.state.user.displayName}</h3>
-                  </div>
-                <MuiThemeProvider>
-                <form onSubmit={this.handleSubmit}>
-                  <input type="hidden" name="username" onChange={this.handleChange} value={this.state.username} />
-                  <TextField type="text" name="title" placeholder="What to do?" onChange={this.handleChange} value={this.state.title} />
-                  <DateTimePicker className="input-datetime" name="datetime" placeholder="When?" onChange={this.setDate} value={this.state.datetime} DatePicker={DatePickerDialog} TimePicker={TimePickerDialog} minutesStep={15} />
-                  <GoogleSuggest name="location" getSuggest={this.setLocation} setValue={this.state.location} />
-                  <button className="btn">{"Let's Do This!"}</button>
-                </form>
-                </MuiThemeProvider>
-          </section>
-          <section className='display-hang'>
-              <div className="wrapper">
-                <ul className="hangs">
-                  {this.state.hangs.map((hang) => {
-                    return (
-                      <li className="hang-item" key={hang.id}>
-                        <div className="hang-header">
-                          <h2>{hang.title}</h2>
-                          @ <Moment format="hh:mm a">{hang.datetime}</Moment>
-                          <div className="hang-time">
-                            <Moment format="MMM" className="hang-month">{hang.datetime}</Moment>
-                            <Moment format="DD" className="hang-day">{hang.datetime}</Moment>
-                            <Moment format="YYYY" className="hang-year">{hang.datetime}</Moment>
-                          </div>
-                        </div>
-                        <StaticGoogleMap size="300x150" style={mapstyle}>
-                          <Marker location={hang.lat+","+hang.lng} color="0xec008c" />
-                        </StaticGoogleMap>
-                        <span className="hang-info">
-                          <span className="hang-member"><img src={hang.userphoto} alt={hang.user} /> {hang.user}</span>
-                          <span className="hang-ui">
-                            {hang.uid === this.state.user.uid ?
-                            <i className="fa fa-trash" onClick={() => this.removeHang(hang.id)}><span>Remove Hang</span></i>
-                            :
-                            <i className="fa fa-plus" onClick={() => this.joinHang(hang.id, this.state.user.displayName, this.state.user.uid)}><span>Join Hang</span></i>
+          <Router>
+              <div className="main">
+                <Route exact path="/" render={() =>
+                  <div className='container'>
+                        {this.state.submit ?
+                        <section className='add-hang-fixed'>
+                              <i className={'fa fa-times clear-submit'} onClick={this.clearSubmit}></i>
+                              <h3>{"You Made A Hang! How Fantastic!"}</h3>
+                              <button className="center" onClick={this.toggleSubmit}>{"Make Another?"}</button>
+                              </section>
+                              : <section className='add-hang'>
+                                    <h3>{this.state.makeHang ? "Let's Make A Hang!" : "Wanna Make A Hang?"}</h3>
+                                    { this.state.makeHang ?
+                                    <MuiThemeProvider>
+                                    <form onSubmit={this.handleSubmit}>
+                                      <input type="hidden" name="username" onChange={this.handleChange} value={this.state.username} />
+                                      <div className="add-hang-wrapper">
+                                        <TextField type="text" name="title" placeholder="What to do?" onChange={this.handleChange} value={this.state.title} />
+                                        <DateTimePicker className="input-datetime" name="datetime" placeholder="When?" onChange={this.setDate} value={this.state.datetime} DatePicker={DatePickerDialog} TimePicker={TimePickerDialog} minutesStep={15} />
+                                        <GoogleSuggest name="location" onLocChange={this.setLocation} onNameChange={this.setName} getLocation={this.state.location.formatted_address} onSubmit={this.state.submit} />
+                                      </div>
+                                      { this.state.user && this.state.title && this.state.datetime && this.state.location ?
+                                      <div className="add-hang-footer">
+                                        <button className="btn">{"Let's Do This!"}</button>
+                                      </div> : ''
+                                      }
+                                    </form>
+                                    <i className={'fa fa-chevron-up'} onClick={this.toggleForm}></i>
+                                    </MuiThemeProvider>
+                                    : <i className={'fa fa-chevron-down'} onClick={this.toggleForm}></i> }
+                              </section>
+                        }
+                        <Geolocated getUserLocation={this.setUserLocation} />
+                        <section className='display-hang'>
+                            {this.state.hangs.length > 0 ?
+                            <div className="wrapper">
+                              <CSSTransitionGroup
+                              className="hangs"
+                              transitionName="hangs"
+                              transitionEnterTimeout={500}
+                              transitionLeaveTimeout={300}>
+                              {Hangs}
+                              {clearInterval(this.state.mountID)}
+                              </CSSTransitionGroup>
+                            </div>
+                            : <i className="fa fa-circle-o-notch fa-spin"></i>
+                            /*<div className="orange">
+                              <span className="bubble">Orange you glad to see me? <br /><strong>Let me find some hangs...</strong></span>
+                              <img src={orange} alt="Orange friend" />
+                            </div>*/
                             }
-                          </span>
-                        </span>
-                        <HangMembers hang={hang} />
-                      </li>
-                    )
-                  })}
-                </ul>
+                        </section>
+                        <MuiThemeProvider>
+                        <BottomNav />
+                        </MuiThemeProvider>
+                      </div> } />
+                <Route path="/hangs/:id" render={(props) =>
+                  <section className='display-hang'>
+                  <div className='container'>
+                    <Link className={'btn-back fa fa-angle-left'} to="/"></Link>
+                    <HangDetail user={this.state.user} username={this.state.user.displayName} userphoto={this.state.user.photoURL} token={this.state.token} id={props.match.params.id} />
+                  </div>
+                  </section>
+                } />
               </div>
-          </section>
+          </Router>
+        : ''}
         </div>
-        : '' }
-      </div>
     );
   }
 }

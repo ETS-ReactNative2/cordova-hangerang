@@ -3,29 +3,37 @@ import ReactGoogleMapLoader from "react-google-maps-loader";
 import ReactGooglePlacesSuggest from "react-google-places-suggest";
 import TextField from 'material-ui/TextField';
 
-const MY_API_KEY = "AIzaSyBto4MuLZrVQi0T5MdMVR3lC-dHYz9f3Yc"
+const MY_API_KEY = "AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA";
 
 class GoogleSuggest extends React.Component {
   state = {
     search: "",
     value: "",
+    location: "",
+    name: "",
   }
 
   handleInputChange(e) {
-    this.setState({search: e.target.value, value: e.target.value})
+      this.setState({search: e.target.value, value: e.target.value});
+      this.setState({location: this.props.getLocation});
+      this.setState({name: this.props.getName});
   }
 
-  handleSelectSuggest(suggest) {
+  handleSelectSuggest(suggest, original) {
     //console.log(suggest) // eslint-disable-line
+    //console.log(original) // eslint-disable-line
     this.setState({
       search: "",
-      value: suggest.formatted_address,
+      value: original.description,
+      location: this.props.getLocation,
+      name: this.props.getName
     })
-    this.props.getSuggest(suggest);
+    this.props.onLocChange(suggest);
+    this.props.onNameChange(original.structured_formatting.main_text);
   }
 
   render() {
-    const {search, value} = this.state
+    const {search,location,value} = this.state
     return (
       <ReactGoogleMapLoader
         params={{
@@ -53,8 +61,9 @@ class GoogleSuggest extends React.Component {
               )}
             >
               <TextField
+                name="place"
                 type="text"
-                value={value||this.props.setValue}
+                value={value}
                 placeholder="Where?"
                 onChange={this.handleInputChange.bind(this)}
               />
