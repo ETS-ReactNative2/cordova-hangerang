@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
 
@@ -6,7 +6,6 @@ import logo from './assets/logo.png';
 //import orange from './assets/orange.png';
 import './assets/App.css';
 
-import {geolocated} from 'react-geolocated';
 import firebase, { auth, provider, base } from './components/firebase.js';
 import GeoFire from 'geofire';
 
@@ -27,7 +26,7 @@ var scroll = Scroll.animateScroll;
 var scroller = Scroll.scroller;
 var Element = Scroll.Element;
 
-class App extends Component {
+class App extends PureComponent {
   constructor() {
     super();
     this.state = {
@@ -40,12 +39,13 @@ class App extends Component {
       name: '',
       token: '',
       hangs: [],
+      nearby: [],
       submit: false,
       newitem: '',
       mountID: '',
       makeHang: false,
-      ulat: '',
-      ulng: ''
+      hangsReady: false,
+      geoReady: false,
     }
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
@@ -56,12 +56,32 @@ class App extends Component {
     this.toggleForm = this.toggleForm.bind(this);
     this.toggleSubmit = this.toggleSubmit.bind(this);
     this.setUserLocation = this.setUserLocation.bind(this);
+    this.filterByProperty = this.filterByProperty.bind(this);
   }
 
   setDate = (datetime) => this.setState({ datetime })
   setLocation = (suggest) => this.setState({ location: suggest })
   setName = (original) => this.setState({ name: original })
   setSubmit = (submit) => this.setState({ submit: false })
+
+  filterByProperty(array, prop, value){
+    var filtered = [];
+    for(var i = 0; i < array.length; i++){
+
+        var obj = array[i];
+
+        for(var key in obj){
+            if(typeof(obj[key] === "object")){
+                var item = obj[key];
+                if(item[prop] === value){
+                    filtered.push(item);
+                }
+            }
+        }
+
+    }
+    return filtered;
+  }
 
   hashCode = function(s){
     return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
@@ -150,30 +170,20 @@ class App extends Component {
   }
 
   setUserLocation(lat,lng) {
-    let usersRef = firebase.database().ref('users-gl');
+    let usersRef = firebase.database().ref('users');
     let usersGeoRef = firebase.database().ref('users-gl');
     let geoUser = new GeoFire(usersGeoRef);
-    usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', function(snapshot){
+    usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', (snapshot) => {
       if (snapshot.exists()) {
         var key = Object.keys(snapshot.val())[0];
-        geoUser.set(key, [lat, lng]).then(function() {
-            console.log("User with key:"+key+" and location ["+lat+","+lng+"] been added to Database");
+        geoUser.set(key, [lat, lng]).then(() => {
+            console.log("User with key:"+key+" and location ["+lat+","+lng+"] been added/updated in Database");
+            this.setState({ geoReady: true });
           }, function(error) {
           console.log("Error: " + error);
         });
       }
     });
-
-    let hangsRef = firebase.database().ref('hangs-gl');
-    let geoHang = new GeoFire(hangsRef);
-    let geoQuery = geoHang.query({
-      center: [lat, lng],
-      radius: 16
-    });
-    geoQuery.on("key_entered", function(key, location, distance){
-      console.log(key + ', ' + location + ', ' + distance);
-    });
-
   }
 
   onHangChange(hangid) {
@@ -192,6 +202,8 @@ class App extends Component {
         usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
           if (snapshot.exists()) {
             var user = snapshot.val();
+            var key = Object.keys(snapshot.val())[0];
+            this.setState({ userkey: key });
             Object.entries(user).map((u) => {
               var token = u[1]['token'];
               this.setState({ token: token });
@@ -204,7 +216,14 @@ class App extends Component {
   }
 
   componentDidMount() {
-    var id = setInterval(() => {
+
+    let usersGeoRef = firebase.database().ref('users-gl');
+    let geoUser = new GeoFire(usersGeoRef);
+
+    let hangsRef = firebase.database().ref('hangs-gl');
+    let geoHang = new GeoFire(hangsRef);
+
+    let id = setInterval(() => {
       this.setState({ mountID: id });
       base.syncState(`hangs`, {
         context: this,
@@ -214,16 +233,34 @@ class App extends Component {
         queries: {
           orderByChild: 'timestamp',
           startAt: Date.now()
-        }
-      });
-    }, 3000);
+        },
+        then() {
+          let nearby = [];
+          if(this.state.userkey){
+            geoUser.get(this.state.userkey).then(function(location) {
+                if (location === null) {
+                    console.log("Provided key is not in GeoFire");
+                } else {
+                  let geoQuery = geoHang.query({
+                    center: location,
+                    radius: 16
+                  });
 
-    let gl = new geolocated({
-      positionOptions: {
-        enableHighAccuracy: false,
-      },
-      userDecisionTimeout: 8000,
-    });
+                  geoQuery.on("key_entered", function(key){
+                    nearby.push(key);
+                  });
+
+                  geoQuery.on("key_exited", function(key){
+                    console.log("not in area:"+key);
+                  });
+                }
+            });
+          }
+          this.setState({ nearby: nearby });
+          this.setState({ hangsReady: true });
+        }
+      })
+    }, 3000);
   }
 
   componentDidUpdate() {
@@ -267,19 +304,25 @@ class App extends Component {
 
   render() {
     const Hangs = this.state.hangs.map((hang) => {
-      if(hang.hash === this.state.newitem){
-        return (
-          <Element name="newItem" className="hang-item" key={hang.key} tabIndex="-1"  ref={section => this.newItem = section}>
-            <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
-          </Element>
-        )
-      }else{
-        return (
-          <section className="hang-item" key={hang.key}>
-            <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
-          </section>
-        )
-      }
+
+        if( this.state.nearby.includes(hang.key) ){
+
+            if(hang.hash === this.state.newitem){
+              return (
+                <Element name="newItem" className="hang-item" key={hang.key} tabIndex="-1"  ref={section => this.newItem = section}>
+                  <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+                </Element>
+              )
+            }else{
+              return (
+                <section className="hang-item" key={hang.key}>
+                  <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+                </section>
+              )
+            }
+
+        }
+
     });
 
     return (
@@ -336,15 +379,15 @@ class App extends Component {
                         }
                         <Geolocated getUserLocation={this.setUserLocation} />
                         <section className='display-hang'>
-                            {this.state.hangs.length > 0 ?
+                            {this.state.hangsReady && this.state.geoReady ?
                             <div className="wrapper">
                               <CSSTransitionGroup
                               className="hangs"
                               transitionName="hangs"
                               transitionEnterTimeout={500}
-                              transitionLeaveTimeout={300}>
+                              transitionLeaveTimeout={500}>
                               {Hangs}
-                              {clearInterval(this.state.mountID)}
+                              { clearInterval(this.state.mountID) }
                               </CSSTransitionGroup>
                             </div>
                             : <i className="fa fa-circle-o-notch fa-spin"></i>

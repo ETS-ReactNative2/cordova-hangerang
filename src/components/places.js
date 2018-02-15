@@ -33,7 +33,7 @@ class GoogleSuggest extends React.Component {
   }
 
   render() {
-    const {search,location,value} = this.state
+    const {search,value} = this.state
     return (
       <ReactGoogleMapLoader
         params={{

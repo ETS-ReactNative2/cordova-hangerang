@@ -488,6 +488,12 @@ header button.btn {
   width: 100%;
   height: auto;
 }
+.hang-item.show {
+  display: block;
+}
+.hang-item.hide {
+  display: none;
+}
 .hang-detail {
   list-style-type: none;
   background-color: #ededed;
