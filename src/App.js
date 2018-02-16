@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
+import Async from 'react-promise';
 
 import logo from './assets/logo.png';
 //import orange from './assets/orange.png';
@@ -8,6 +9,8 @@ import './assets/App.css';
 
 import firebase, { auth, provider, base } from './components/firebase.js';
 import GeoFire from 'geofire';
+import {geolocated} from 'react-geolocated';
+import revgeo from 'reverse-geocoding';
 
 import Scroll from 'react-scroll';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -16,7 +19,7 @@ import DateTimePicker from 'material-ui-datetimepicker';
 import DatePickerDialog from 'material-ui/DatePicker/DatePickerDialog'
 import TimePickerDialog from 'material-ui/TimePicker/TimePickerDialog';
 
-import Geolocated from './components/geolocated.js';
+//import Geolocated from './components/geolocated.js';
 import GoogleSuggest from './components/places.js';
 import HangItem from './components/hangitem.js';
 import HangDetail from './components/hangdetail.js';
@@ -46,42 +49,25 @@ class App extends PureComponent {
       makeHang: false,
       hangsReady: false,
       geoReady: false,
+      lat: '',
+      lng: '',
+      mode: 'global',
     }
+    this.clearSubmit = this.clearSubmit.bind(this);
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onHangChange = this.onHangChange.bind(this);
-    this.clearSubmit = this.clearSubmit.bind(this);
     this.toggleForm = this.toggleForm.bind(this);
     this.toggleSubmit = this.toggleSubmit.bind(this);
-    this.setUserLocation = this.setUserLocation.bind(this);
-    this.filterByProperty = this.filterByProperty.bind(this);
   }
 
   setDate = (datetime) => this.setState({ datetime })
   setLocation = (suggest) => this.setState({ location: suggest })
   setName = (original) => this.setState({ name: original })
   setSubmit = (submit) => this.setState({ submit: false })
-
-  filterByProperty(array, prop, value){
-    var filtered = [];
-    for(var i = 0; i < array.length; i++){
-
-        var obj = array[i];
-
-        for(var key in obj){
-            if(typeof(obj[key] === "object")){
-                var item = obj[key];
-                if(item[prop] === value){
-                    filtered.push(item);
-                }
-            }
-        }
-
-    }
-    return filtered;
-  }
+  setMode = (mode) => this.setState({ mode })
 
   hashCode = function(s){
     return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
@@ -162,6 +148,7 @@ class App extends PureComponent {
         usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', function(snapshot){
           if (snapshot.exists()) {
             console.log('user already exists');
+            return;
           }else{
             usersRef.push(u);
           }
@@ -169,21 +156,46 @@ class App extends PureComponent {
       });
   }
 
-  setUserLocation(lat,lng) {
-    let usersRef = firebase.database().ref('users');
-    let usersGeoRef = firebase.database().ref('users-gl');
-    let geoUser = new GeoFire(usersGeoRef);
-    usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', (snapshot) => {
-      if (snapshot.exists()) {
-        var key = Object.keys(snapshot.val())[0];
-        geoUser.set(key, [lat, lng]).then(() => {
-            console.log("User with key:"+key+" and location ["+lat+","+lng+"] been added/updated in Database");
-            this.setState({ geoReady: true });
-          }, function(error) {
-          console.log("Error: " + error);
+  getLocale(lat,lng){
+
+      let usersRef = firebase.database().ref('users');
+      let usersGeoRef = firebase.database().ref('users-gl');
+      let geoUser = new GeoFire(usersGeoRef);
+
+      usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', (snapshot) => {
+        if (snapshot.exists()) {
+          var key = Object.keys(snapshot.val())[0];
+          geoUser.set(key, [lat, lng]).then(() => {
+              //console.log("User with key:"+key+" and location ["+lat+","+lng+"] been added/updated in Database");
+              this.setState({ geoReady: true, lat, lng });
+              return;
+            }, function(error) {
+            console.log("Error: " + error);
+          });
+        }
+      });
+
+      var geocode = {
+          'latitude': lat,
+          'longitude': lng
+      };
+
+      var location = async () => {
+      return new Promise((resolve, reject) => {
+        revgeo.location(geocode, (err, result) => {
+            if(err){
+              console.log(err);
+            }else{
+              resolve(result.results[3].formatted_address);
+              return;
+            }
+            return;
+          });
         });
-      }
-    });
+      };
+
+      return location();
+
   }
 
   onHangChange(hangid) {
@@ -217,50 +229,46 @@ class App extends PureComponent {
 
   componentDidMount() {
 
-    let usersGeoRef = firebase.database().ref('users-gl');
-    let geoUser = new GeoFire(usersGeoRef);
+      let usersGeoRef = firebase.database().ref('users-gl');
+      let geoUser = new GeoFire(usersGeoRef);
 
-    let hangsRef = firebase.database().ref('hangs-gl');
-    let geoHang = new GeoFire(hangsRef);
+      let hangsRef = firebase.database().ref('hangs-gl');
+      let geoHang = new GeoFire(hangsRef);
 
-    let id = setInterval(() => {
-      this.setState({ mountID: id });
-      base.syncState(`hangs`, {
-        context: this,
-        state: 'hangs',
-        asArray: true,
-        keepKeys: true,
-        queries: {
-          orderByChild: 'timestamp',
-          startAt: Date.now()
-        },
-        then() {
-          let nearby = [];
-          if(this.state.userkey){
-            geoUser.get(this.state.userkey).then(function(location) {
-                if (location === null) {
-                    console.log("Provided key is not in GeoFire");
-                } else {
-                  let geoQuery = geoHang.query({
-                    center: location,
-                    radius: 16
-                  });
+      let id = setInterval(() => {
+        this.setState({ mountID: id });
+        base.syncState(`hangs`, {
+          context: this,
+          state: 'hangs',
+          asArray: true,
+          keepKeys: true,
+          queries: {
+            orderByChild: 'timestamp',
+            startAt: Date.now()
+          },
+          then() {
+            const nearby = [];
+            if(this.state.userkey){
+              geoUser.get(this.state.userkey).then(function(location) {
+                  if (location === null) {
+                      console.log("Provided key is not in GeoFire");
+                  } else {
+                    let geoQuery = geoHang.query({
+                      center: location,
+                      radius: 16
+                    });
 
-                  geoQuery.on("key_entered", function(key){
-                    nearby.push(key);
-                  });
-
-                  geoQuery.on("key_exited", function(key){
-                    console.log("not in area:"+key);
-                  });
-                }
-            });
+                    geoQuery.on("key_entered", function(key){
+                      nearby.push(key);
+                    });
+                  }
+              });
+            }
+            this.setState({ nearby });
+            this.setState({ hangsReady: true });
           }
-          this.setState({ nearby: nearby });
-          this.setState({ hangsReady: true });
-        }
-      })
-    }, 3000);
+        })
+      }, 6000);
   }
 
   componentDidUpdate() {
@@ -303,26 +311,55 @@ class App extends PureComponent {
   }
 
   render() {
-    const Hangs = this.state.hangs.map((hang) => {
 
-        if( this.state.nearby.includes(hang.key) ){
-
-            if(hang.hash === this.state.newitem){
-              return (
-                <Element name="newItem" className="hang-item" key={hang.key} tabIndex="-1"  ref={section => this.newItem = section}>
-                  <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
-                </Element>
-              )
-            }else{
-              return (
-                <section className="hang-item" key={hang.key}>
-                  <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
-                </section>
-              )
-            }
-
+    const GlobalHangs = this.state.hangs.map((hang) => {
+        if(hang.hash === this.state.newitem){
+          return (
+            <Element name="newItem" className="hang-item" key={hang.key} tabIndex="-1"  ref={section => this.newItem = section}>
+              <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+            </Element>
+          )
+        }else{
+          return (
+            <section className="hang-item" key={hang.key}>
+              <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+            </section>
+          )
         }
+    });
 
+    const NearHangs = this.state.hangs.map((hang) => {
+       if( this.state.nearby.includes(hang.key) ){
+          if(hang.hash === this.state.newitem){
+            return (
+              <Element name="newItem" className="hang-item" key={hang.key} tabIndex="-1"  ref={section => this.newItem = section}>
+                <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+              </Element>
+            )
+          }else{
+            return (
+              <section className="hang-item" key={hang.key}>
+                <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+              </section>
+            )
+          }
+       }
+    });
+
+    const TodayHangs = this.state.hangs.map((hang) => {
+        var date = new Date();
+        var end = date.setHours(23,59,59,999);
+        var timezoneOffset = (-1) * date.getTimezoneOffset() * 60000;
+        var timestamp = (hang.timestamp + timezoneOffset);
+        var utcOffset = date.getTimezoneOffset() * 60000;
+        end = (end + utcOffset);
+        if( timestamp < end ){
+            return (
+              <section className="hang-item" key={hang.key}>
+                <HangItem mapsize={'400x200'} onHangChange={this.onHangChange} hang={hang} user={this.state.user} token={this.state.token} />
+              </section>
+            )
+        }
     });
 
     return (
@@ -377,28 +414,50 @@ class App extends PureComponent {
                                     : <i className={'fa fa-chevron-down'} onClick={this.toggleForm}></i> }
                               </section>
                         }
-                        <Geolocated getUserLocation={this.setUserLocation} />
+                        <span>
+                        { this.state.mode === 'nearby' ?
+                        <div className="user-geolocation">
+                            { !this.props.isGeolocationAvailable
+                              ? <div>Your browser does not support Geolocation</div>
+                              : !this.props.isGeolocationEnabled
+                                ? <div>Geolocation is not enabled</div>
+                                : this.props.coords
+                                  ?
+                                    <Async
+                                      promise={this.getLocale(this.props.coords.latitude,this.props.coords.longitude)}
+                                      then={
+                                            (val) =>
+                                            <div className="hangs-nearby">
+                                              <h3>
+                                                <i className={'fa fa-map-marker'}></i> <span>{val}</span>
+                                              </h3>
+                                            </div>
+                                          }
+                                     />
+                                  : <div className="hangs-nearby"><h3>Getting location <i className="fa fa-circle-o-notch fa-spin"></i></h3></div>
+                            }
+                        </div>
+                        : ''}
+                        </span>
                         <section className='display-hang'>
-                            {this.state.hangsReady && this.state.geoReady ?
+                          {this.state.hangs && this.state.hangsReady ?
                             <div className="wrapper">
                               <CSSTransitionGroup
-                              className="hangs"
-                              transitionName="hangs"
-                              transitionEnterTimeout={500}
-                              transitionLeaveTimeout={500}>
-                              {Hangs}
+                               className="hangs"
+                               transitionName="hangs"
+                               transitionEnterTimeout={500}
+                               transitionLeaveTimeout={500}>
+                              {this.state.mode === 'global' ? GlobalHangs : ''}
+                              {this.state.mode === 'nearby' && this.state.geoReady  ? NearHangs : ''}
+                              {this.state.mode === 'today' ? TodayHangs : ''}
                               { clearInterval(this.state.mountID) }
                               </CSSTransitionGroup>
                             </div>
                             : <i className="fa fa-circle-o-notch fa-spin"></i>
-                            /*<div className="orange">
-                              <span className="bubble">Orange you glad to see me? <br /><strong>Let me find some hangs...</strong></span>
-                              <img src={orange} alt="Orange friend" />
-                            </div>*/
-                            }
+                          }
                         </section>
                         <MuiThemeProvider>
-                        <BottomNav />
+                        <BottomNav setMode={this.setMode} />
                         </MuiThemeProvider>
                       </div> } />
                 <Route path="/hangs/:id" render={(props) =>
@@ -417,4 +476,9 @@ class App extends PureComponent {
   }
 }
 
-export default App;
+export default geolocated({
+  positionOptions: {
+    enableHighAccuracy: false,
+  },
+  userDecisionTimeout: 8000,
+})(App);

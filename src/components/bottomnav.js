@@ -3,7 +3,7 @@ import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigati
 import Paper from 'material-ui/Paper';
 
 const recentsIcon = <i className="fa fa-clock-o"></i>;
-const favoritesIcon = <i className="fa fa-heart"></i>;
+const globeIcon = <i className="fa fa-globe"></i>;
 const nearbyIcon = <i className="fa fa-map-marker"></i>;
 
 /**
@@ -12,11 +12,24 @@ const nearbyIcon = <i className="fa fa-map-marker"></i>;
  * state (for instance, by the URL).
  */
 class BottomNav extends Component {
-  state = {
-    selectedIndex: 0,
-  };
+  constructor() {
+    super();
+    this.state = {
+      selectedIndex: 1,
+    }
+    this.select = this.select.bind(this);
+  }
 
-  select = (index) => this.setState({selectedIndex: index});
+  select(e) {
+    var mode = {
+      0: "nearby",
+      1: "global",
+      2: "today",
+    };
+    //console.log(e);
+    this.setState({ selectedIndex: e });
+    this.props.setMode( mode[e] );
+  }
 
   render() {
     return (
@@ -25,17 +38,17 @@ class BottomNav extends Component {
           <BottomNavigationItem
             label="Nearby"
             icon={nearbyIcon}
-            onClick={() => this.select(0)}
+            onClick={() => this.select(0) }
+          />
+          <BottomNavigationItem
+            label="Everywhere"
+            icon={globeIcon}
+            onClick={() => this.select(1) }
           />
           <BottomNavigationItem
             label="Today"
             icon={recentsIcon}
-            onClick={() => this.select(1)}
-          />
-          <BottomNavigationItem
-            label="Favorites"
-            icon={favoritesIcon}
-            onClick={() => this.select(2)}
+            onClick={() => this.select(2) }
           />
         </BottomNavigation>
       </Paper>
