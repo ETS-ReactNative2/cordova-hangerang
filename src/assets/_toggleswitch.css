@@ -1,0 +1,71 @@
+.toggle-wrapper {
+  position: relative;
+  width: 50%;
+  margin: 0.5em auto 2rem;
+}
+@media only screen and (max-width: 400px) {
+  .toggle-wrapper {
+    width: 80%;
+  }
+}
+@media only screen and (min-width: 400px) and (max-width: 1050px) {
+  .toggle-wrapper {
+    width: 66%;
+  }
+}
+@media only screen and (min-width: 1050px) {
+  .toggle-wrapper {
+    width: 33%;
+  }
+}
+.toggle-wrapper label {
+  padding: 0.3em;
+  font-size: 0.75rem;
+  display: block;
+  text-align: center;
+  position: absolute;
+  bottom: -1.5rem;
+  width: calc(100% - 0.5rem);
+  color: rgba(0,0,0,0.75);
+}
+.toggleContainer {
+  width: 100%;
+  position: relative;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.toggleContainer .toggleOption {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+  color: #000;
+  font-size: 0.8rem;
+}
+@media only screen and (max-width: 400px) {
+  .toggleContainer .toggleOption {
+    font-size: 0.25rem;
+  }
+}
+.toggleContainer .toggleOption.selected {
+  color: #fff;
+  cursor: initial;
+}
+.toggleContainer .toggle {
+  position: absolute;
+  height: 100%;
+  bottom: 0;
+  left: 0;
+  transition: all 0.4s ease-in-out;
+  background: #000;
+}
+.optionDisabled {
+  background: #e6e6e6;
+  cursor: no-drop !important;
+}

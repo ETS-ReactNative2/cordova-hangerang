@@ -1,12 +1,14 @@
 import React from "react";
-import { BrowserRouter as Router, Link } from 'react-router-dom';
+import ReactDOM from 'react-dom';
+import ReactDOMServer from 'react-dom/server';
+import rasterizeHTML from 'rasterizehtml';
 import firebase, {base} from './firebase.js';
-import MutualFriends from './mutualfriends.js';
+import graph from 'fb-react-sdk';
+import mmnt from 'moment';
 import Moment from 'react-moment';
-//import GooglePlaceName from './placename.js';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
 import { ShareButtons, generateShareIcon } from 'react-share';
-import graph from 'fb-react-sdk';
+import AddToCalendar from 'react-add-to-calendar';
 
 import HangCrew from './hangcrew.js';
 import HangChat from './hangchat.js';
@@ -17,66 +19,95 @@ const TwitterIcon = generateShareIcon('twitter');
 const EmailIcon = generateShareIcon('email');
 const { FacebookShareButton, TwitterShareButton, EmailShareButton } = ShareButtons;
 
+const storage = firebase.storage().ref();
+
+var hangHeader = {
+  position: "relative",
+  backgroundColor: "#ec008c",
+  margin: "0",
+  color: "#fff",
+  fontWeight: "300",
+  padding: "1rem 5rem 1rem 1rem",
+  cursor: "pointer",
+  fontFamily: "'Poppins', sans-serif",
+  boxSizing: "border-box",
+}
+
+var hangHeaderTitle = {
+  fontSize: "1.25rem",
+  fontWeight: "600",
+  lineHeight: "1",
+  marginBottom: "0",
+  textTransform: "capitalize",
+  fontFamily: "'Poppins', sans-serif",
+}
+var hangHeaderTitleLink = {
+  color: "#fff",
+  textDecoration: "none",
+}
+
+var hangDate = {
+  background: "#000",
+  color: "#fff",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  position: "absolute",
+  top: "0",
+  right: "0",
+  height: "100%",
+  padding: "0 1rem",
+  textTransform: "uppercase",
+  textAlign: "center",
+  borderCollapse: "collapse",
+}
+
+
+var hangMonth = {
+  fontSize: "0.75rem",
+  lineHeight: "1",
+  paddingBottom: "0.33rem",
+  display: "block",
+}
+
+var hangYear = {
+  fontSize: "0.75rem",
+  lineHeight: "0",
+}
+
+var hangDay = {
+  fontFamily: "Josefin Sans, sans-serif",
+  fontWeight: "bold",
+  fontSize: "1.6rem",
+  lineHeight: "0",
+}
+
 class HangItem extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       inhang: false,
       key: '',
       hang: '',
-      uid: ''
+      uid: '',
+      shortUrl: '',
+      mutualFriends: 0,
+      openCalendar: false,
+      visibility: 'hide'
     }
     this.inHang = this.inHang.bind(this);
     this.joinHang = this.joinHang.bind(this);
     this.localHangChange = this.localHangChange.bind(this);
-    this.handleButtonClick = this.handleButtonClick.bind(this);
-  }
-
-  getMutualFriends(user, uid, token){
-    var getfbid = async () => {
-      return new Promise((resolve, reject) => {
-        const usersRef = firebase.database().ref(`/users/`);
-        usersRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
-          if (snapshot.exists()) {
-            var u = snapshot.val();
-            Object.entries(u).map((member) => {
-                resolve(member[1].fbid);
-                return member[1].fbid;
-            });
-          }
-          return;
-        });
-      });
-    };
-
-    var getGraphRequest = async () => {
-      var fbid = await getfbid();
-      return new Promise((resolve, reject) => {
-        if(token){
-          graph.get(fbid+'?fields=context.fields(mutual_friends)&access_token='+token, (err, res) => {
-              if(!err){
-                var friends = res.context.mutual_friends.summary.total_count;
-                resolve(friends);
-              }
-          });
-        }
-      });
-    };
-
-    var friends = async () => {
-      var result = await getGraphRequest();
-      return new Promise((resolve, reject) => {
-        resolve(result);
-      });
-    }
-
-    return friends();
-
+    this.getMutualFriends = this.getMutualFriends.bind(this);
+    this.handleShareButton = this.handleShareButton.bind(this);
+    this.toggleCalendar = this.toggleCalendar.bind(this);
   }
 
   joinHang(hang, user, uid) {
     const crewRef = firebase.database().ref(`/hangs/${hang}/crew/`);
     const member = {
+      fbid: this.props.user.providerData[0].uid,
       uid: this.props.user.uid,
       user: this.props.user.displayName,
       userphoto: this.props.user.photoURL,
@@ -122,7 +153,85 @@ class HangItem extends React.Component {
     this.inHang(hangid);
   }
 
-  componentDidMount() {
+  handleLink(id) {
+    this.props.history.push('/hangs/'+id);
+  }
+
+  handleShareButton(url) {
+    this.props.openPopupBox(url);
+  }
+
+  toggleCalendar() {
+    if( this.state.openCalendar ){
+      this.setState({ openCalendar: false });
+    }else{
+      this.setState({ openCalendar: true });
+    }
+  }
+
+  getMutualFriends(user, uid, token){
+    console.log('getting mutual friends');
+    var getfbid = async () => {
+      return new Promise((resolve, reject) => {
+        const usersRef = firebase.database().ref(`/members/`);
+        usersRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            var u = snapshot.val();
+            Object.entries(u).map((member) => {
+                console.log('got fbid:'+ member[1].fbid);
+                resolve(member[1].fbid);
+                return member[1].fbid;
+            });
+          }
+          return;
+        });
+      });
+    };
+
+    var getGraphRequest = async () => {
+      var fbid = await getfbid();
+      return new Promise((resolve, reject) => {
+        console.log(token);
+        if(token){
+          graph.get(fbid+'?fields=context.fields(mutual_friends)&access_token='+token, (err, res) => {
+              console.log(res);
+              if(!err){
+                if(res.context.mutual_friends){
+                  resolve(res.context.mutual_friends.summary.total_count);
+                }else{
+                  resolve(0);
+                }
+              }else{
+                throw err;
+              }
+          });
+        }
+      });
+    };
+
+    var friends = async () => {
+      var request = await getGraphRequest();
+      return new Promise((resolve, reject) => {
+        resolve(request);
+      });
+    }
+
+    return friends();
+
+  }
+
+  componentWillMount = (result) => {
+
+    var promise = this.getMutualFriends(this.props.user, this.props.hang.uid, this.props.token);
+
+    promise.then((result) => {
+      console.log(result);
+      this.setState({ mutualFriends:result });
+      if( result > 0 ){
+        this.setState({ visibility: 'show' })
+      }
+    }).catch((err) => console.log("rejected:", err));
+
     if(this.props.hang.key){
       this.setState({ key: this.props.hang.key });
       this.inHang(this.props.hang.key);
@@ -130,38 +239,145 @@ class HangItem extends React.Component {
       this.setState({ key: this.props.id });
       this.inHang(this.props.id);
     }
-    const hangRef = firebase.database().ref(`/hangs/${this.state.key}`);
-    hangRef.once('value', (snapshot) => {
-        let newhang = snapshot.val();
-        this.setState({
-          hang: newhang
-        });
-      });
+
   }
 
-  handleButtonClick(id) {
-    this.props.history.push('/hangs/'+id);
+  renderHangItem = () => {
+    var canvas = ReactDOM.findDOMNode(this.refs.canvas);
+    var detail = ReactDOM.findDOMNode(this.refs.detail);
+    rasterizeHTML.drawHTML(detail.innerHTML,canvas);
+  }
+
+  doesFileExist = (urlToFile) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', urlToFile, false);
+    xhr.send();
+    if (xhr.status === "404") {
+        return false;
+    } else {
+        return true;
+    }
+  }
+
+  saveImg = () => {
+    var canvas = ReactDOM.findDOMNode(this.refs.canvas);
+
+    let setMeta = (url) => {
+      var meta = document.querySelector('meta[property="og:image"]');
+      meta.content = url;
+      console.log(url);
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      console.log(meta);
+    }
+
+    let onResolve = (url) => {
+      setMeta(url);
+    }
+
+    let onReject = (error, func) => {
+      console.log(error);
+      func.on('state_changed', snapshot => {
+        }, snapshot => {
+          console.error("Unable to save image.");
+        }, () => {
+          let url = func.snapshot.downloadURL;
+          console.log("Image not found. Saved to " + url);
+          setMeta(url);
+          return;
+      });
+    }
+
+    canvas.toBlob(blob => {
+      var url;
+      var name = this.props.hang.hash + ".png";
+      var f = storage.child("images/" + name);
+      var task = f.put(blob);
+      storage.child("images/" + name).getDownloadURL()
+      .then(
+        function(url) {
+          onResolve(url);
+        })
+      .catch(
+        function(error) {
+        onReject(error, task);
+      });
+    });
+  };
+
+  componentDidMount = (result) => {
+
+    const hangRef = firebase.database().ref(`/hangs/${this.state.key}`);
+
+    hangRef.once('value', (snapshot) => {
+      let newhang = snapshot.val();
+      this.setState({
+        hang: newhang
+      });
+    });
+
+    if( this.props.hang.uid === this.props.user.uid || this.props.hang.visibility === 'public' || this.state.inhang || this.props.detail ){
+      this.setState({ visibility: 'show' })
+    }
+
+    if(this.props.detail){
+      setTimeout(this.renderHangItem, 500);
+      setTimeout(this.saveImg, 1000);
+    }
+
   }
 
   render() {
     var baseUrl = window.location.protocol + "//" + window.location.host;
-    var hangLink = '/hangs/'+this.state.key;
+    var hangLink = '/'+this.props.hang.hash;
     var shareUrl = baseUrl+hangLink;
 
-    return (
-      <div key={this.state.key}>
+    let event = {
+        title: this.props.hang.title,
+        description: this.props.hang.title+" with "+this.props.hang.user+" (powered by Hangerang)",
+        location: this.props.hang.address,
+        startTime: this.props.hang.datetime,
+        endTime: mmnt(this.props.hang.datetime).add(2, 'hours')
+    }
+
+    let icon = { textOnly: 'none' };
+
+    let Hang =
+      <span>
+        <span ref="detail">
         <HangLink to={hangLink} text={
-        <div className="hang-header">
-          <h2>{this.props.hang.title}</h2>
-          <span className="hang-placetime">
-            <Moment format="hh:mm a" className="hang-time">{this.props.hang.datetime}</Moment> @ {this.props.hang.placename}
-          </span>
-          <div className="hang-date">
-            <Moment format="MMM" className="hang-month">{this.props.hang.datetime}</Moment>
-            <Moment format="DD" className="hang-day">{this.props.hang.datetime}</Moment>
-            <Moment format="YYYY" className="hang-year">{this.props.hang.datetime}</Moment>
-          </div>
-        </div>
+        <table width="100%" style={hangHeader} className={'hang-header'}>
+          <tbody>
+          <tr>
+            <td>
+              <h2 style={hangHeaderTitle}>{this.props.hang.title}</h2>
+              <span className="hang-placetime">
+                <Moment format="hh:mm a" className="hang-time">{this.props.hang.datetime}</Moment> @ {this.props.hang.placename}
+              </span>
+            </td>
+            <td>
+              <table style={hangDate}>
+                <tbody>
+                <tr>
+                  <td>
+                <Moment format="MMM" className="hang-month" style={hangMonth}>{this.props.hang.datetime}</Moment>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                <Moment format="DD" className="hang-day" style={hangDay}>{this.props.hang.datetime}</Moment>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                <Moment format="YYYY" className="hang-year" style={hangYear}>{this.props.hang.datetime}</Moment>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          </tbody>
+        </table>
         } />
         <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
           <StaticGoogleMap
@@ -173,43 +389,77 @@ class HangItem extends React.Component {
             <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
           </StaticGoogleMap>
         </a>
+        </span>
         <span className="hang-info">
           <span className="hang-member">
             <img src={this.props.hang.userphoto} alt={this.props.hang.user} className="hang-host" />
             <span>
             <b>Host</b><br />
-            <Router>
-            <Link to={'/users/'+this.props.hang.uid}>{ this.props.hang.user }</Link>
-            </Router>
+            { this.props.hang.fbid ? <a href={'https://www.facebook.com/'+this.props.hang.fbid} target="_blank">{this.props.hang.user}</a>
+            : <span>{this.props.hang.user}</span> }
             </span>
-            { this.props.hang.uid !== this.props.user.uid ?
-            <MutualFriends user={this.props.user} hang={this.props.hang} token={this.props.token} />
-            : ''}
+            { this.props.hang.uid !== this.props.user.uid && this.state.mutualFriends !== 0  ?
+            <span className="hang-number">{this.state.mutualFriends}</span>
+            : '' }
           </span>
-          <span className="hang-ui">
-            <FacebookShareButton url={shareUrl} quote={'Join Me on Hangerang: '+this.props.hang.title}>
-              <FacebookIcon size={20} round />
-            </FacebookShareButton>
-            <TwitterShareButton url={shareUrl} quote={'Join Me on Hangerang: '+this.props.hang.title}>
-              <TwitterIcon size={20} round />
-            </TwitterShareButton>
-            <EmailShareButton url={shareUrl} quote={'Join Me on Hangerang: '+this.props.hang.title}>
-              <EmailIcon size={20} round />
-            </EmailShareButton>
-            { this.props.hang.uid === this.props.user.uid ?
-            <i className="fa fa-trash" onClick={() => this.removeHang(this.state.key)}><span>Remove Hang</span></i>
-            : ''}
-            { this.props.hang.uid !== this.props.user.uid && this.state.inhang === false ?
-            <i className="fa fa-plus-circle" onClick={() => this.joinHang(this.state.key, this.props.user.displayName, this.props.user.uid)}><span>Join Hang</span></i>
-            : ''}
-          </span>
+          {this.state.openCalendar ? <span className="hang-ui"><AddToCalendar event={event} buttonLabel="Add to calendar" buttonTemplate={icon} /><i className={'fa fa-times'} onClick={() => this.toggleCalendar()}></i></span> :
+            <span className="hang-ui">
+              {this.state.inhang ?
+              <button className="fa fa-link" onClick={() => this.handleShareButton(shareUrl)}></button>
+              : null }
+              {this.state.inhang ?
+              <FacebookShareButton url={shareUrl} quote={'Join Me on Hangerang: '+this.props.hang.title}>
+                <FacebookIcon size={20} round />
+              </FacebookShareButton>
+              : null }
+              {this.state.inhang ?
+              <TwitterShareButton url={shareUrl} quote={'Join Me on Hangerang: '+this.props.hang.title}>
+                <TwitterIcon size={20} round />
+              </TwitterShareButton>
+              : null }
+              {this.state.inhang ?
+              <EmailShareButton url={shareUrl} quote={'Join Me on Hangerang: '+this.props.hang.title}>
+                <EmailIcon size={20} round />
+              </EmailShareButton>
+              : null }
+              {this.state.inhang ?
+              <button className="fa fa-calendar" onClick={() => this.toggleCalendar()}></button>
+              : null }
+              { this.props.hang.uid === this.props.user.uid ?
+              <i className="fa fa-trash" onClick={() => this.removeHang(this.state.key)}><span>Remove Hang</span></i>
+              : ''}
+              { this.props.hang.uid !== this.props.user.uid && this.state.inhang === false ?
+              <button className="hang-join" onClick={() => this.joinHang(this.state.key, this.props.user.displayName, this.props.user.uid)}>Join</button>
+              : ''}
+            </span>
+          }
         </span>
         <HangCrew localHangChange={this.localHangChange} hang={this.state.key} uid={this.props.user.uid} crew={this.props.hang.crew} />
-        { this.props.detail ?
-        <HangChat localHangChange={this.localHangChange} hang={this.props.hang} id={this.state.key} username={this.props.username} userphoto={this.props.userphoto} />
+        { this.props.detail && this.state.inhang ?
+        <HangChat localHangChange={this.localHangChange} hang={this.state.key} username={this.props.username} userphoto={this.props.userphoto} />
         : ''}
-      </div>
-    )
+      </span>;
+
+    let HangItem;
+    if(this.props.detail === true){
+      HangItem = <div><canvas ref="canvas" width="600" height="400" style={{display: 'none'}}></canvas><div className={'hang-item '+this.state.visibility} key={this.state.key}>{Hang}</div></div>;
+    }else{
+      HangItem = <div className={'hang-item '+this.state.visibility} key={this.state.key}>{Hang}</div>;
+    }
+
+    if(this.props.hang.uid === this.props.user.uid){
+      return HangItem;
+    }else if( this.props.hang.visibility === 'friends' && this.state.mutualFriends > 0 ){
+      return HangItem;
+    }else if(this.props.hang.visibility === 'invite' && this.state.inhang ){
+      return HangItem;
+    }else if(this.props.hang.visibility === 'public'){
+      return HangItem;
+    }else if(this.props.detail){
+      return HangItem;
+    }else{
+      return <div className="hang-item hide"></div>;
+    }
   }
 }
 

@@ -15,6 +15,14 @@ a:hover {
 svg {
   cursor: pointer;
 }
+canvas {
+  //display: none;
+}
+.page {
+  background: #fff;
+  margin: 0 1rem;
+  padding: 0.5rem 1rem 2rem;
+}
 .fa {
   font-size: 1rem;
   transform: translateY(50deg);
@@ -32,6 +40,32 @@ svg {
 }
 .fa-trash {
   color: #aaa;
+}
+.fa.fa-link {
+  color: #fff;
+  background: #f41c21;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  line-height: 1rem;
+  margin: 0;
+  padding: 0.125rem;
+  border: none;
+}
+.fa.fa-calendar {
+  color: #34b6ee;
+  background: #fff;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  line-height: 1rem;
+  margin: 0;
+  padding: 0.125rem;
+  border: none;
 }
 .fa-plus-circle {
   color: #000;
@@ -62,6 +96,9 @@ svg {
 .fa-clock-o {
   color: #ec008c;
 }
+.btn.facebook {
+  background: #3b5998;
+}
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -81,6 +118,193 @@ svg {
 .wrapper {
   max-width: 1100px;
   margin: 0 auto;
+}
+.center {
+  text-align: center;
+}
+.jumbo {
+  position: relative;
+  height: 100vh;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  text-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+.jumbo h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+  margin: 0 1rem 1rem;
+}
+@media only screen and (min-width: 400px) and (max-width: 1050px) {
+  .jumbo h2 {
+    margin: 1rem 2rem;
+    font-size: 3rem;
+  }
+}
+@media only screen and (min-width: 1050px) {
+  .jumbo h2 {
+    margin: 1rem 2rem;
+    font-size: 5rem;
+  }
+}
+.jumbo p {
+  color: #fff;
+  font-size: 0.8rem;
+}
+@media only screen and (min-width: 400px) and (max-width: 1050px) {
+  .jumbo p {
+    font-size: 1rem;
+  }
+}
+@media only screen and (min-width: 1050px) {
+  .jumbo p {
+    font-size: 1.2rem;
+  }
+}
+.jumbo .fa-facebook-square {
+  color: #fff;
+}
+.jumbo .brand {
+  position: relative;
+  margin-top: -2rem;
+  flex-direction: column;
+}
+.jumbo .brand h1 {
+  color: #fff;
+}
+.jumbo .brand img {
+  width: 72px;
+  height: auto;
+  margin: 0 auto;
+}
+.jumbo .sign-up {
+  color: #fff;
+}
+.jumbo .sign-up strong {
+  color: #34b6ee;
+}
+.jumbo .sign-up div {
+  padding: 1rem 0;
+}
+.jumbo .sign-up input {
+  border: none;
+  padding: 0.5rem;
+  width: 200px;
+}
+.jumbo .sign-up button {
+  padding: 0.5rem;
+  border: none;
+  background: #000;
+  color: #fff;
+}
+.jumbo .share-ui {
+  font-size: 0.75rem;
+}
+.jumbo .share-ui div {
+  padding: 0;
+}
+.jumbo .share-buttons {
+  width: 125px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.jumbo .share-buttons .fa {
+  margin-left: 0.25rem;
+}
+.jumbo .white {
+  color: white;
+}
+.section-one:after {
+  content: '';
+  background: url("./friends.jpg") center center;
+  opacity: 0.5;
+  background-size: cover;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+}
+.section-one .jumbo-content {
+  margin-top: 0;
+}
+.section-two {
+  background: #34b6ee;
+}
+.section-two span {
+  color: #e9ec00;
+}
+.section-three {
+  background: #ec008c;
+}
+.section-three span {
+  color: #34b6ee;
+}
+.section-four {
+  background: #e9ec00;
+}
+.section-four span {
+  color: #ec008c;
+}
+.section-four h2,
+.section-four p {
+  color: #000;
+}
+.section-four .section-nav {
+  color: #000;
+}
+.section-four .section-nav .fa-chevron-down,
+.section-four .section-nav .fa-chevron-up {
+  color: #000;
+}
+.jumbo-content {
+  position: relative;
+  z-index: 1;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  text-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.section-nav {
+  position: relative;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 200;
+}
+.section-nav .fa-chevron-down,
+.section-nav .fa-chevron-up {
+  color: #fff;
+  font-size: 2rem;
 }
 .user-profile {
   display: flex;
@@ -105,7 +329,7 @@ svg {
   color: #000;
   margin: 0 1rem 0 0.5rem;
 }
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 800px) {
   .user-profile h4 {
     display: none;
   }
@@ -261,10 +485,14 @@ div.input-datetime div.input-datetime div {
 .add-hang form > .input-datetime {
   padding: 0 0 0 9px;
 }
+.joyride-step-4 .input-location {
+  z-index: 9999;
+}
 .customWrapper {
   font-size: 0.75rem;
   text-align: left;
   padding: 0.5rem;
+  z-index: 99999;
 }
 .display-hang {
   width: 100%;
@@ -334,7 +562,7 @@ button.center {
 }
 header {
   position: fixed;
-  width: 100%;
+  width: 100vw;
   z-index: 2;
   color: #fff;
   background-color: #fff;
@@ -345,6 +573,9 @@ header {
   header {
     padding: 33px 0 25px 1rem;
   }
+}
+header.hide {
+  display: none;
 }
 header .wrapper {
   width: 100%;
@@ -361,41 +592,44 @@ header i {
   vertical-align: middle;
   margin-left: 12px;
 }
-header .brand {
+header button.btn {
+  background: #000;
+}
+.brand {
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
   z-index: 1;
 }
 @media only screen and (max-width: 400px) {
-  header .brand {
+  .brand {
     position: absolute;
     width: calc(100% - 2rem);
     margin-top: 0.25rem;
   }
 }
 @media only screen and (min-width: 400px) and (max-width: 1050px) {
-  header .brand {
+  .brand {
     position: absolute;
     width: calc(100% - 2rem);
     margin-top: 0.25rem;
   }
 }
 @media only screen and (min-width: 1050px) {
-  header .brand {
+  .brand {
     margin: 0;
   }
 }
-header .brand img {
+.brand img {
   width: auto;
   height: 25px;
 }
 @media only screen and (min-width: 1050px) {
-  header .brand img {
+  .brand img {
     height: 50px;
   }
 }
-header .brand h1 {
+.brand h1 {
   font-family: 'Arvo';
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -407,14 +641,11 @@ header .brand h1 {
   font-size: 1rem;
 }
 @media only screen and (min-width: 1050px) {
-  header .brand h1 {
+  .brand h1 {
     font-size: 25px;
     height: 25px;
     margin: 0.5rem 0 0;
   }
-}
-header button.btn {
-  background: #000;
 }
 .footer-nav {
   width: 100%;
@@ -433,6 +664,7 @@ header button.btn {
   font-size: 0.75rem;
   font-weight: 600;
   text-align: center;
+  height: 40px;
 }
 .hangs-nearby .fa-map-marker {
   color: #f41c21;
@@ -450,61 +682,97 @@ header button.btn {
   margin: 0;
   padding: 0;
 }
-.hangs-enter {
+.hang-item-enter {
   opacity: 0.01;
 }
-.hangs-enter.hangs-enter-active {
+.hang-item-enter.hang-item-enter-active {
   opacity: 1;
   transition: opacity 500ms ease-in;
 }
-.hangs-leave {
+.hang-item-leave {
   opacity: 1;
 }
-.hangs-leave.hangs-leave-active {
+.hang-item-leave.hang-item-leave-active {
   opacity: 0.01;
   transition: opacity 300ms ease-in;
 }
-.hang-item {
+.hang-item,
+.hang-item-new {
   flex: 0 0 auto;
   list-style-type: none;
   background-color: #ededed;
   color: #000;
   margin: 0 0.5rem 1rem;
   box-shadow: 0 3px 4px 0 rgba(0,0,0,0.14), 0 3px 3px -2px rgba(0,0,0,0.12), 0 1px 8px 0 rgba(0,0,0,0.2);
+  -webkit-transition: 0.5s;
+  -moz-transition: 0.5s;
+  -o-transition: 0.5s;
+  transition: 0.5s;
+  opacity: 0;
+  visibility: hidden;
 }
-@media only screen and (max-width: 400px) {
-  .hang-item {
-    width: calc(100% - 1rem);
-    min-height: calc(100vw - 2rem);
-  }
-}
-@media only screen and (min-width: 400px) and (max-width: 1050px) {
-  .hang-item {
-    width: calc(50% - 1rem);
-    min-height: calc((100vw / 2) - 2rem);
-  }
-}
-@media only screen and (min-width: 1050px) {
-  .hang-item {
+@media only screen and (max-width: 1800px) {
+  .hang-item,
+  .hang-item-new {
     width: calc(33.33% - 1rem);
-    min-height: calc(1100px / 3.33);
+    min-height: calc(1100px / 4);
   }
 }
-.hang-item img {
+@media only screen and (max-width: 1050px) {
+  .hang-item,
+  .hang-item-new {
+    width: calc(50% - 1rem);
+    min-height: calc(1100px / 4);
+  }
+}
+@media only screen and (max-width: 800px) {
+  .hang-item,
+  .hang-item-new {
+    width: calc(100% - 1rem);
+    min-height: calc(100vw - 4rem);
+  }
+}
+.hang-item img,
+.hang-item-new img {
   width: 100%;
   height: auto;
 }
-.hang-item.show {
+.hang-item.show,
+.hang-item-new.show {
+  opacity: 1;
+  visibility: visible;
   display: block;
 }
-.hang-item.hide {
+.hang-item.hide,
+.hang-item-new.hide {
+  opacity: 0;
+  visibility: hidden;
   display: none;
 }
+.hang-item-new {
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+  border: 4px solid #34b6ee;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+@media only screen and (max-width: 400px) {
+  .hang-item-new {
+    width: calc(100% - 1rem);
+    min-height: calc(100vw - 3rem);
+  }
+}
+.hang-item-new .hang-item {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: -0.5rem;
+}
 .hang-detail {
-  list-style-type: none;
-  background-color: #ededed;
-  color: #000;
-  box-shadow: 0 3px 4px 0 rgba(0,0,0,0.14), 0 3px 3px -2px rgba(0,0,0,0.12), 0 1px 8px 0 rgba(0,0,0,0.2);
   width: calc(100% - 1rem);
   margin: 0 auto;
   width: calc(100% - 1rem);
@@ -522,9 +790,15 @@ header button.btn {
     min-height: calc(1100px / 3.33);
   }
 }
-.hang-detail img {
-  width: 100%;
-  height: auto;
+@media only screen and (min-width: 400px) and (max-width: 1050px) {
+  .hang-detail .hang-item {
+    width: 100%;
+  }
+}
+@media only screen and (min-width: 1050px) {
+  .hang-detail .hang-item {
+    width: 100%;
+  }
 }
 .hang-date {
   background: #000;
@@ -539,21 +813,18 @@ header button.btn {
   height: 100%;
   padding: 0 1rem;
   text-transform: uppercase;
-  font-family: 'Josefin Sans', sans-serif;
 }
-.hang-date .hang-month {
+.hang-month {
   font-family: 'Poppins', sans-serif;
   font-weight: 100;
-  line-height: 1.2;
   letter-spacing: 0.1rem;
 }
-.hang-date .hang-day {
+.hang-day {
   font-size: 1.6rem;
   font-weight: 600;
-  line-height: 0.9;
   letter-spacing: 0.1rem;
 }
-.hang-date .hang-year {
+.hang-year {
   font-size: 0.75rem;
   letter-spacing: 0.15rem;
 }
@@ -591,15 +862,26 @@ header button.btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 .hang-ui .fa {
-  padding-left: 0.25rem;
+  margin-left: 0.25rem;
 }
 .hang-ui div {
   padding-left: 0.1rem;
 }
-.hang-ui div:hover {
-  opacity: 0.75;
+.hang-ui button.hang-join,
+.hang-ui button.hang-leave {
+  background: #34b6ee;
+  color: #fff;
+  font-size: 0.66rem;
+  padding: 0.33rem;
+  margin: 0;
+  border: none;
+  border-radius: 0.2rem;
+}
+.hang-ui button.hang-leave {
+  background: #ec008c;
 }
 .hang-member {
   position: relative;
@@ -832,7 +1114,242 @@ header button.btn {
 }
 .user-geolocation {
   position: relative;
-  min-height: 30px;
+  min-height: 40px;
   height: auto !important;
+  height: 40px;
+}
+@import "_joyride.css";
+.react-add-to-calendar {
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.004);
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+.react-add-to-calendar__wrapper {
+  zoom: 1;
+  cursor: pointer;
+}
+.react-add-to-calendar__button {
+  padding: 0.33rem;
+  background-color: #f9f9f9;
+  border: 1px solid #aab9d4;
+  border-radius: 3px;
+  color: #000;
+  font-size: 0.5rem;
+}
+.react-add-to-calendar__button--light {
+  background-color: #fff;
+}
+.react-add-to-calendar__icon--right {
+  padding-left: 5px;
+}
+.react-add-to-calendar__icon--left {
+  padding-right: 5px;
+}
+.react-add-to-calendar__dropdown {
+  position: absolute;
+  top: 30px;
+  left: 5px;
+  width: 125%;
+  padding: 5px 0 5px 8px;
+  box-shadow: 1px 3px 6px rgba(0,0,0,0.15);
+  border: 1px solid #a8a8a8;
+  background-color: #fff;
+  text-align: left;
+}
+.react-add-to-calendar__dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.25rem;
+}
+.react-add-to-calendar__dropdown ul li a {
+  color: #000;
+  text-decoration: none;
+  font-size: 0.5rem;
+  white-space: nowrap;
+}
+.react-add-to-calendar__dropdown ul li a i {
+  padding-right: 10px;
+}
+.popupbox {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: -ms-flex;
+  display: -o-flex;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+.popupbox[hidden] {
+  display: none;
+}
+.popupbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1002;
+  background: none repeat scroll 0% 0% #000;
+}
+.popupbox-content {
+  overflow: hidden;
+}
+.popupbox-wrapper {
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: -ms-flex;
+  display: -o-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  -moz-flex-direction: column;
+  -ms-flex-direction: column;
+  -o-flex-direction: column;
+  flex-direction: column;
+  z-index: 1003;
+  position: relative;
+}
+.popupbox-titleBar {
+  overflow: hidden;
+  display: block;
+  position: relative;
+}
+.popupbox-btn--close {
+  z-index: 1004;
+}
+.popupbox[data-title='bottom'] .popupbox-content {
+  order: 1;
+}
+.popupbox[data-title='bottom'] .popupbox-titleBar {
+  order: 2;
+}
+.popupbox-wrapper {
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 80%;
+  min-width: 300px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.9);
+  background-color: #fff;
+}
+.popupbox-content {
+  padding: 20px 24px 30px;
+}
+.popupbox-content input {
+  width: 70%;
   height: 30px;
+  background: #efefef;
+  border: none;
+  padding: 0.2rem 0.5rem;
+}
+.popupbox-content button {
+  width: 20%;
+  height: 35px;
+  background: #000;
+  color: #fff;
+  border: none;
+}
+.popupbox-titleBar {
+  font-weight: bold;
+  font-size: 18px;
+  text-shadow: 0 -1px 1px rgba(0,0,0,0.2);
+  padding: 11px 37px 11px 24px;
+  border-bottom: 1px #ccc solid;
+}
+.popupbox-btn--close {
+  transition: all 0.5s;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  color: #c1c1c1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+}
+.popupbox-btn--close:hover {
+  color: #000;
+}
+.popupbox.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.toggle-wrapper {
+  position: relative;
+  width: 50%;
+  margin: 0.5em auto 2rem;
+}
+@media only screen and (max-width: 400px) {
+  .toggle-wrapper {
+    width: 80%;
+  }
+}
+@media only screen and (min-width: 400px) and (max-width: 1050px) {
+  .toggle-wrapper {
+    width: 66%;
+  }
+}
+@media only screen and (min-width: 1050px) {
+  .toggle-wrapper {
+    width: 33%;
+  }
+}
+.toggle-wrapper label {
+  padding: 0.3em;
+  font-size: 0.75rem;
+  display: block;
+  text-align: center;
+  position: absolute;
+  bottom: -1.5rem;
+  width: calc(100% - 0.5rem);
+  color: rgba(0,0,0,0.75);
+}
+.toggleContainer {
+  width: 100%;
+  position: relative;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.toggleContainer .toggleOption {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+  color: #000;
+  font-size: 0.8rem;
+}
+@media only screen and (max-width: 400px) {
+  .toggleContainer .toggleOption {
+    font-size: 0.25rem;
+  }
+}
+.toggleContainer .toggleOption.selected {
+  color: #fff;
+  cursor: initial;
+}
+.toggleContainer .toggle {
+  position: absolute;
+  height: 100%;
+  bottom: 0;
+  left: 0;
+  transition: all 0.4s ease-in-out;
+  background: #000;
+}
+.optionDisabled {
+  background: #e6e6e6;
+  cursor: no-drop !important;
 }

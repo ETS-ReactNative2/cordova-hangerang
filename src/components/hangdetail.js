@@ -1,6 +1,5 @@
 import React from "react";
 import firebase, {base} from './firebase.js';
-import { CSSTransitionGroup } from 'react-transition-group';
 import HangItem from './hangitem.js';
 
 class HangDetail extends React.Component {
@@ -8,6 +7,7 @@ class HangDetail extends React.Component {
     super();
     this.state = {
       hang: [],
+      key: ''
     }
     this.onHangChange = this.onHangChange.bind(this);
   }
@@ -21,35 +21,49 @@ class HangDetail extends React.Component {
   }
 
   componentDidMount() {
-    base.syncState(`hangs/${this.props.id}`, {
-      context: this,
-      state: 'hang',
-      keepKeys: true
-    });
+    if(this.props.hash){
+      base.syncState(`hangs`, {
+        context: this,
+        state: 'hash',
+        asArray: true,
+        queries: {
+          orderByChild: 'hash',
+          equalTo: this.props.hash
+        },
+        then() {
+          var item = this.state.hash;
+          if(item.length > 0){
+            this.setState({ key: item[0]['key'] });
+            base.syncState(`hangs/${item[0]['key']}`, {
+              context: this,
+              state: 'hang',
+              keepKeys: true
+            });
+          }
+        }
+      });
+    }
   }
 
   render(){
       return (
         <div className="wrapper">
-          <CSSTransitionGroup
-            className="hangs"
-            transitionName="hangs"
-            transitionEnterTimeout={1000}
-            transitionLeaveTimeout={500}>
-              <section className="hang-detail">
-                <HangItem
-                  onHangChange={this.onHangChange}
-                  hang={this.state.hang}
-                  user={this.props.user}
-                  username={this.props.username}
-                  userphoto={this.props.userphoto}
-                  token={this.props.token}
-                  id={this.props.id}
-                  mapsize={'600x300'}
-                  detail={true}
-                />
-              </section>
-          </CSSTransitionGroup>
+        {Object.keys(this.state.hang).length > 0 ?
+          <section className="hang-detail">
+            <HangItem
+              onHangChange={this.onHangChange}
+              hang={this.state.hang}
+              user={this.props.user}
+              username={this.props.username}
+              userphoto={this.props.userphoto}
+              token={this.props.token}
+              id={this.state.key}
+              mapsize={'600x300'}
+              detail={true}
+              openPopupBox={this.props.openPopupBox}
+            />
+          </section>
+        : <div className="center"><i className="fa fa-circle-o-notch fa-spin"></i></div> }
         </div>
       );
     }

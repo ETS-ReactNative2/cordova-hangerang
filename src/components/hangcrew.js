@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from 'react-router-dom';
 import { base } from  './firebase.js';
 
 class HangCrew extends React.Component {
@@ -20,11 +19,12 @@ class HangCrew extends React.Component {
                 <li className="hang-crew-item" key={member[0]}>
                   <span className="hang-member">
                     <img src={member[1].userphoto} alt={member[1].user} className="hang-user-photo" />
-                    <Link to={'/users/'+member[1].uid}>{member[1].user}</Link>
+                    {member[1].fbid ? <a href={'https://www.facebook.com/'+member[1].fbid} target="_blank">{member[1].user}</a>
+                    : <span>{member[1].user}</span> }
                   </span>
                   {this.props.uid === member[1].uid ?
                   <span className="hang-ui">
-                    <i onClick={() => this.leaveHang(this.props.hang, member[0])} className="hang-leave fa fa-minus-circle"></i>
+                    <button onClick={() => this.leaveHang(this.props.hang, member[0])} className="hang-leave">Leave</button>
                   </span>
                   :
                   ''/*<span className="hang-ui">

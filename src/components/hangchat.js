@@ -25,21 +25,23 @@ class HangChat extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    const chatRef = firebase.database().ref(`/hangs/${this.props.id}/chat/`);
-    const msg = {
-      msg: this.state.msg,
-      username: this.props.username,
-      userphoto: this.props.userphoto,
-      timestamp: Date.now(),
+    if(this.state.msg !== ''){
+      const chatRef = firebase.database().ref(`/hangs/${this.props.hang}/chat/`);
+      const msg = {
+        msg: this.state.msg,
+        username: this.props.username,
+        userphoto: this.props.userphoto,
+        timestamp: Date.now(),
+      }
+      chatRef.push(msg);
+      this.setState({
+        msg: '',
+      });
     }
-    chatRef.push(msg);
-    this.setState({
-      msg: '',
-    });
   }
 
   componentDidMount() {
-    base.syncState(`/hangs/${this.props.id}/chat/`, {
+    base.syncState(`/hangs/${this.props.hang}/chat/`, {
       context: this,
       state: 'chat',
       keepKeys: true,

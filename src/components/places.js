@@ -35,6 +35,7 @@ class GoogleSuggest extends React.Component {
   render() {
     const {search,value} = this.state
     return (
+      <div className="input-location">
       <ReactGoogleMapLoader
         params={{
           key: MY_API_KEY,
@@ -71,6 +72,7 @@ class GoogleSuggest extends React.Component {
           )
         }
       />
+      </div>
     )
   }
 }

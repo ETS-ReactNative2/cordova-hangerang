@@ -5,7 +5,7 @@ const config = {
     authDomain: "hangerang.us",
     databaseURL: "https://fun-food-friends-cf17d.firebaseio.com",
     projectId: "fun-food-friends-cf17d",
-    storageBucket: "",
+    storageBucket: "fun-food-friends-cf17d.appspot.com",
     messagingSenderId: "369783209620"
   };
 var app = firebase.initializeApp(config);

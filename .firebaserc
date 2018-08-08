@@ -1,5 +1,15 @@
 {
   "projects": {
-    "default": "fun-food-friends-cf17d"
+    "default": "fun-food-friends-cf17d",
+    "demo": "hang-coffee"
+  },
+  "targets": {
+    "hangerang-demo": {
+      "storage": {
+        "hang-coffee": [
+          "."
+        ]
+      }
+    }
   }
 }

@@ -5,6 +5,8 @@ $orange = #fc5121
 $red = #f41c21
 $purple = #c724eb
 
+scale = 0 600px 800px 1020px 1260px
+
 body {
   font-family: 'Poppins', sans-serif
   background-color: $yellow
@@ -26,13 +28,19 @@ svg {
   cursor: pointer
 }
 
+.page {
+  background: white
+  margin: 0 1rem
+  padding: 0.5rem 1rem 2rem
+}
+
 .fa {
   font-size: 1rem
   transform: translateY(50deg)
   cursor: pointer
   color: $blue
   &:hover {
-    color: #000
+    color: black
   }
   span {
     display: none
@@ -47,8 +55,36 @@ svg {
   color: #aaa
 }
 
+.fa.fa-link {
+  color: white
+  background: $red
+  text-align: center
+  border-radius: 50%
+  font-size: 0.75rem
+  width: 1.25rem
+  height: 1.25rem
+  line-height: 1rem
+  margin: 0
+  padding: 0.125rem
+  border: none
+}
+
+.fa.fa-calendar {
+  color: $blue
+  background: white
+  text-align: center
+  border-radius: 50%
+  font-size: 0.75rem
+  width: 1.4rem
+  height: 1.4rem
+  line-height: 1rem
+  margin: 0
+  padding: 0.125rem
+  border: none
+}
+
 .fa-plus-circle {
-  color: #000
+  color: black
   font-size: 1.33rem
   &:hover {
     color: $pink
@@ -73,14 +109,18 @@ svg {
 }
 
 .fa-times.clear-submit {
-  color: #000;
-  position: absolute;
-  top: 0.25rem;
-  right: 0.33rem;
+  color: black
+  position: absolute
+  top: 0.25rem
+  right: 0.33rem
 }
 
 .fa-clock-o {
   color: $pink
+}
+
+.btn.facebook {
+  background: #3b5998
 }
 
 .container {
@@ -101,6 +141,191 @@ svg {
   margin: 0 auto
 }
 
+.center {
+  text-align: center
+}
+
+.jumbo {
+  position: relative
+  height: 100vh
+  display: -ms-flexbox
+  display: flex
+  -ms-flex-direction: column
+  flex-direction: column
+  text-align: center
+  -ms-flex-align: center
+  align-items: center
+  -ms-flex-pack: center
+  justify-content: center
+  width: 100%
+  background: black
+  overflow: hidden
+  padding: 0 2rem
+  box-sizing: border-box
+  h2 {
+    font-size: 1.25rem
+    font-weight: bold
+    line-height: 1
+    color: white
+    margin: 0 1rem 1rem
+    +tablet(){
+      margin: 1rem 2rem
+      font-size: 3rem
+    }
+    +desktop(){
+      margin: 1rem 2rem
+      font-size: 5rem
+    }
+  }
+  p {
+    color: white
+    font-size: 0.8rem
+    +tablet(){
+      font-size: 1rem
+    }
+    +desktop(){
+      font-size: 1.2rem
+    }
+  }
+  .fa-facebook-square {
+    color: white
+  }
+  .brand {
+    position: relative
+    margin-top: -2rem
+    flex-direction: column
+    h1 {
+      color: white
+    }
+    img {
+      width: 72px
+      height: auto
+      margin: 0 auto
+    }
+  }
+  .sign-up {
+    color: white
+    strong {
+      color: $blue
+    }
+    div {
+      padding: 1rem 0
+    }
+    input {
+      border: none
+      padding: 0.5rem
+      width: 200px
+    }
+    button {
+      padding: 0.5rem
+      border: none
+      background: black
+      color: white
+    }
+  }
+  .share-ui {
+    font-size: 0.75rem
+    div {
+      padding: 0
+    }
+  }
+  .share-buttons {
+    width: 125px
+    margin: 0 auto
+    display: flex
+    justify-content: space-between
+    align-items: center
+    position: relative
+    .fa {
+      margin-left: 0.25rem
+    }
+  }
+}
+
+.section-one {
+  &:after {
+    content: ''
+    background: url('./friends.jpg') center center
+    opacity: 0.5
+    background-size: cover
+    position: absolute
+    width: 100%
+    height: 100%
+    top: 0
+    right: 0
+    bottom: 0
+    left: 0
+    z-index: 0
+  }
+  .jumbo-content {
+    margin-top: 0
+  }
+}
+
+.section-two {
+  background: $blue
+  span {
+    color: $yellow
+  }
+}
+
+.section-three {
+  background: $pink
+  span {
+    color: $blue
+  }
+}
+
+.section-four {
+  background: $yellow
+  span {
+    color: $pink
+  }
+  h2, p {
+    color: black
+  }
+  .section-nav {
+    color: black
+    .fa-chevron-down,
+    .fa-chevron-up {
+      color: black
+    }
+  }
+}
+
+.jumbo-content {
+  position: relative
+  z-index: 1
+  display: -ms-flexbox
+  display: flex
+  -ms-flex-direction: column
+  flex-direction: column
+  text-align: center
+  -ms-flex-align: center
+  align-items: center
+  -ms-flex-pack: center
+  justify-content: center
+}
+
+.section-nav {
+  position: relative
+  margin-top: 2rem
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  z-index: 2
+  text-align: center
+  color: white
+  font-size: 1rem
+  font-weight: 200
+  .fa-chevron-down,
+  .fa-chevron-up {
+    color: white
+    font-size: 2rem
+  }
+}
+
 .user-profile {
   display: flex
   align-items: center
@@ -118,9 +343,9 @@ svg {
   h4 {
     font-family: 'Poppins', sans-serif
     font-weight: 600
-    color: #000
+    color: black
     margin: 0 1rem 0 0.5rem
-    +mobile(){
+    +to-width(3){
       display: none
     }
   }
@@ -135,7 +360,7 @@ svg {
       }
       i {
         display: inline
-        color: #fff
+        color: white
         margin: 0
       }
     }
@@ -149,7 +374,7 @@ svg {
       }
       i {
         display: inline
-        color: #fff
+        color: white
         margin: 0
       }
     }
@@ -175,11 +400,11 @@ svg {
   background-color: rgb(237, 237, 237)
   box-shadow: 0 3px 4px 0 rgba(0,0,0,.14), 0 3px 3px -2px rgba(0,0,0,.12), 0 1px 8px 0 rgba(0,0,0,.2)
   width: calc(100% - 1rem)
-  -webkit-transition: height 1s;
-  -moz-transition: height 1s;
-  -ms-transition: height 1s;
-  -o-transition: height 1s;
-  transition: height 1s;
+  -webkit-transition: height 1s
+  -moz-transition: height 1s
+  -ms-transition: height 1s
+  -o-transition: height 1s
+  transition: height 1s
   .fa {
     display: inline-block
     text-align: center
@@ -269,10 +494,15 @@ div.input-datetime {
   padding: 0 0 0 9px
 }
 
+.joyride-step-4 .input-location {
+  z-index: 9999
+}
+
 .customWrapper { //for google places suggest
   font-size: 0.75rem
   text-align: left
   padding: 0.5rem
+  z-index: 99999
 }
 
 .display-hang {
@@ -283,12 +513,11 @@ div.input-datetime {
     display: block
     text-align: center
   }
-}
-
-.display-hang button {
-  margin-top: 20px
-  margin-left: auto
-  display: block
+  button {
+    margin-top: 20px
+    margin-left: auto
+    display: block
+  }
 }
 
 h2 {
@@ -319,8 +548,8 @@ a.btn-back {
   margin: 0 auto 1rem
   display: table
   &:hover {
-    background: #000
-    color: #fff
+    background: black
+    color: white
   }
 }
 
@@ -329,7 +558,7 @@ button.btn {
   background-color: $blue
   cursor: pointer
   border: 0
-  color: #fff
+  color: white
   font-size: 14px
   box-shadow: 0 2px 5px 0 rgba(0,0,0,.26)
   padding: 10px 20px
@@ -340,7 +569,7 @@ button.center {
   background-color: $blue
   cursor: pointer
   border: 0
-  color: #fff
+  color: white
   font-size: 14px
   box-shadow: 0 2px 5px 0 rgba(0,0,0,.26)
   padding: 10px 20px
@@ -350,14 +579,17 @@ button.center {
 
 header {
   position: fixed
-  width: 100%
+  width: 100vw
   z-index: 2
-  color: #fff
-  background-color: #fff
+  color: white
+  background-color: white
   border-top: 5px solid $blue
   padding: 1rem 0 1rem 1rem
   +desktop() {
     padding: 33px 0 25px 1rem
+  }
+  &.hide {
+    display: none
   }
   .wrapper {
     width: 100%
@@ -374,53 +606,53 @@ header {
   margin-left: 12px
   }
 
-  .brand {
-    display: flex
-    justify-content: center
-    margin-bottom: 1rem
-    z-index: 1
-    +mobile() {
-      position: absolute
-      width: calc( 100% - 2rem)
-      margin-top: 0.25rem
-    }
-    +tablet() {
-      position: absolute
-      width: calc( 100% - 2rem)
-      margin-top: 0.25rem
-    }
-    +desktop() {
-      margin: 0
-    }
-    img {
-      width: auto
-      height: 25px
-      +desktop() {
-        height: 50px
-      }
-    }
-    h1 {
-      font-family: 'Arvo'
-      font-weight: 600
-      letter-spacing: 0.3px
-      display: inline-block
-      margin: 0.15rem 0 0
-      vertical-align: middle
-      color: #000
-      height: 1rem
-      font-size: 1rem
-      +desktop() {
-        font-size: 25px
-        height: 25px
-        margin: 0.5rem 0 0
-      }
-    }
-  }
-
   button.btn {
-    background: #000
+    background: black
   }
 
+}
+
+.brand {
+  display: flex
+  justify-content: center
+  margin-bottom: 1rem
+  z-index: 1
+  +mobile() {
+    position: absolute
+    width: calc( 100% - 2rem)
+    margin-top: 0.25rem
+  }
+  +tablet() {
+    position: absolute
+    width: calc( 100% - 2rem)
+    margin-top: 0.25rem
+  }
+  +desktop() {
+    margin: 0
+  }
+  img {
+    width: auto
+    height: 25px
+    +desktop() {
+      height: 50px
+    }
+  }
+  h1 {
+    font-family: 'Arvo'
+    font-weight: 600
+    letter-spacing: 0.3px
+    display: inline-block
+    margin: 0.15rem 0 0
+    vertical-align: middle
+    color: black
+    height: 1rem
+    font-size: 1rem
+    +desktop() {
+      font-size: 25px
+      height: 25px
+      margin: 0.5rem 0 0
+    }
+  }
 }
 
 .footer-nav {
@@ -432,7 +664,7 @@ header {
     font-size: 1.25rem
   }
   div {
-    color: #000 !important
+    color: black !important
     font-weight: 600
   }
 }
@@ -441,6 +673,7 @@ header {
   font-size: 0.75rem
   font-weight: 600
   text-align: center
+  height: 40px
   .fa-map-marker {
     color: $red
     font-size: 1.25rem
@@ -460,20 +693,20 @@ header {
   padding: 0
 }
 
-.hangs-enter {
+.hang-item-enter {
   opacity: 0.01
 }
 
-.hangs-enter.hangs-enter-active {
+.hang-item-enter.hang-item-enter-active {
   opacity: 1
   transition: opacity 500ms ease-in
 }
 
-.hangs-leave {
+.hang-item-leave {
   opacity: 1
 }
 
-.hangs-leave.hangs-leave-active {
+.hang-item-leave.hang-item-leave-active {
   opacity: 0.01
   transition: opacity 300ms ease-in
 }
@@ -482,38 +715,67 @@ header {
   flex: 0 0 auto
   list-style-type: none
   background-color: rgb(237, 237, 237)
-  color: #000
+  color: black
   margin: 0 0.5rem 1rem
   box-shadow: 0 3px 4px 0 rgba(0,0,0,.14), 0 3px 3px -2px rgba(0,0,0,.12), 0 1px 8px 0 rgba(0,0,0,.2)
-  +mobile() {
-    width: calc(100% - 1rem)
-    min-height: calc(100vw - 2rem)
-  }
-  +tablet() {
-    width: calc(50% - 1rem)
-    min-height: calc((100vw / 2) - 2rem)
-  }
-  +desktop() {
+  -webkit-transition: 0.5s
+  -moz-transition: 0.5s
+  -o-transition: 0.5s
+  transition: 0.5s
+  opacity: 0
+  visibility: hidden
+  +to-width(5){
     width: calc(33.33% - 1rem)
-    min-height: calc(1100px / 3.33)
+    min-height: calc(1100px / 4)
+  }
+  +to-width(4){
+    width: calc(50% - 1rem)
+    min-height: calc(1100px / 4)
+  }
+  +to-width(3){
+    width: calc(100% - 1rem)
+    min-height: calc(100vw - 4rem)
   }
   img {
     width: 100%
     height: auto
   }
   &.show {
-    display: block;
+    opacity: 1
+    visibility: visible
+    display: block
   }
   &.hide {
-    display: none;
+    opacity: 0
+    visibility: hidden
+    display: none
+  }
+}
+
+.hang-item-new {
+  @extend .hang-item
+  opacity: 1
+  visibility: visible
+  position: relative
+  border: 4px solid $blue
+  box-sizing: border-box
+  overflow: hidden
+  +mobile() {
+    width: calc(100% - 1rem)
+    min-height: calc(100vw - 3rem)
+  }
+  .hang-item {
+    position: absolute
+    width: 100%
+    height: 100%
+    top: 0
+    right: 0
+    bottom: 0
+    left: -0.5rem
   }
 }
 
 .hang-detail {
-  list-style-type: none
-  background-color: rgb(237, 237, 237)
-  color: #000
-  box-shadow: 0 3px 4px 0 rgba(0,0,0,.14), 0 3px 3px -2px rgba(0,0,0,.12), 0 1px 8px 0 rgba(0,0,0,.2)
   width: calc(100% - 1rem)
   margin: 0 auto
   width: calc(100% - 1rem)
@@ -526,15 +788,19 @@ header {
     width: calc(50% - 1rem)
     min-height: calc(1100px / 3.33)
   }
-  img {
-    width: 100%
-    height: auto
+  .hang-item {
+    +tablet() {
+      width: 100%
+    }
+    +desktop() {
+      width: 100%
+    }
   }
 }
 
 .hang-date {
-  background: #000
-  color: #fff
+  background: black
+  color: white
   display: flex
   flex-direction: column
   justify-content: center
@@ -572,7 +838,7 @@ header {
   position: relative
   background-color: $pink
   margin: 0
-  color: #fff
+  color: white
   font-weight: 300
   padding: 1rem 5rem 1rem 1rem
   line-height: 0.75rem
@@ -584,7 +850,7 @@ header {
     margin-bottom: 0.25rem
     text-transform: capitalize
     a {
-      color: #fff
+      color: white
       text-decoration: none
     }
   }
@@ -601,14 +867,25 @@ header {
   display: flex
   justify-content: space-between
   align-items: center
+  position: relative
   .fa {
-    padding-left: 0.25rem
+    margin-left: 0.25rem
   }
   div {
     padding-left: 0.1rem
-    &:hover {
-      opacity: 0.75
-    }
+  }
+  button.hang-join,
+  button.hang-leave {
+    background: $blue
+    color: white
+    font-size: 0.66rem
+    padding: 0.33rem
+    margin: 0
+    border: none
+    border-radius: 0.2rem
+  }
+  button.hang-leave {
+    background: $pink
   }
 }
 
@@ -623,7 +900,7 @@ header {
     font-size: 9px
     font-weight: 400
     line-height: 10px
-    color: #000
+    color: black
   }
   span {
     line-height: 1
@@ -647,7 +924,7 @@ header {
 .hang-number.hang-number {
   background: $pink
   font-size: 0.33rem
-  color: #fff
+  color: white
   min-width: 15px
   height: 1rem
   line-height: 1rem
@@ -709,7 +986,7 @@ header {
   list-style: none
   margin: 0
   padding: 1rem 0
-  background: #fff
+  background: white
 }
 
 .hang-chat-label {
@@ -726,7 +1003,7 @@ header {
   left: 50%
   width: 50px
   margin-left: -25px
-  background: #fff
+  background: white
   text-transform: uppercase
   border-radius: 0.25rem
 }
@@ -734,7 +1011,7 @@ header {
 .add-msg-footer {
   margin-bottom: 1.5rem
   button.btn {
-    background: #000
+    background: black
     padding: 10px
     border-radius: 50%
   }
@@ -755,7 +1032,7 @@ header {
   bottom: -1rem
   display: inline-block
   white-space: nowrap
-  color: #000
+  color: black
 }
 
 .hang-chat-item {
@@ -764,7 +1041,7 @@ header {
   align-items: flex-end
   margin-bottom: 1.25rem
   .hang-msg-user {
-    margin-bottom: -0.5rem;
+    margin-bottom: -0.5rem
   }
   .hang-msg {
     position: relative
@@ -773,7 +1050,7 @@ header {
     padding: 0.25rem 0.5rem
     background: $blue
     font-size: 0.75rem
-    color: #fff
+    color: white
     max-width: 50%
     &:before {
       content: ''
@@ -844,7 +1121,7 @@ header {
       right: 40px
       border-left: 20px solid transparent
       border-right: 20px solid transparent
-      border-top: 30px solid #fff
+      border-top: 30px solid white
     }
   }
   img {
@@ -855,7 +1132,15 @@ header {
 
 .user-geolocation {
    position: relative
-   min-height: 30px
+   min-height: 40px
    height: auto !important
-   height: 30px
+   height: 40px
 }
+
+//css
+@import "_joyride.css"
+
+//stylus
+@import "_addtocalendar.styl"
+@import "_popupbox.styl"
+@import "_toggleswitch.styl"
