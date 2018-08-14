@@ -64,6 +64,7 @@ class App extends PureComponent {
       newitem: '',
       mountID: '',
       makeHang: false,
+      hangKey: '',
       //component state
       isLive: true,
       hangsReady: false,
@@ -119,6 +120,7 @@ class App extends PureComponent {
       mode: 'global',
     });
     const hangsRef = firebase.database().ref('hangs');
+    const placesRef = firebase.database().ref('places');
     var key = Date.now();
     key = key.toString().split("").map(num => parseInt(num, 0));
     key = key.splice(8, 5);
@@ -157,8 +159,36 @@ class App extends PureComponent {
        location: '',
        submit: true,
        makeHang: false,
-       newitem: itemHash
+       newitem: itemHash,
+       hangKey: key,
      });
+   });
+
+   const newPlace = {
+     pid: this.state.location.place_id,
+     name: this.state.name,
+   }
+   const placeRef = firebase.database().ref('places');
+   placeRef.orderByChild("pid").equalTo(this.state.location.place_id).once('value', (snapshot) => {
+       if (snapshot.exists()) {
+         var place = snapshot.val();
+         let key = Object.keys(place)[0];
+         const placeHangsRef = firebase.database().ref(`/places/${key}/hangs/`);
+         Object.entries(place).map((p) => {
+            placeHangsRef.push(this.state.hangKey);
+         });
+         console.log('Place exists. Add new hang');
+         return;
+       }else{
+         placeRef.push(newPlace).then((snap) => {
+           const placeHangsRef = firebase.database().ref(`/places/${snap.key}/hangs/`);
+           placeHangsRef.push(this.state.hangKey);
+         });
+         console.log('Place created in database. First Hang added');
+         return;
+       }
+   }).catch(function(error) {
+     console.log(error);
    });
   }
 
@@ -271,7 +301,6 @@ class App extends PureComponent {
             var user = snapshot.val();
             var key = Object.keys(snapshot.val())[0];
             this.setState({ userkey: key });
-            console.log(user);
             Object.entries(user).map((u) => {
               this.setState({
                 loggingIn: false,
