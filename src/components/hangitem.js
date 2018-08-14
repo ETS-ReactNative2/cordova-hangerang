@@ -99,7 +99,7 @@ class HangItem extends React.Component {
     this.inHang = this.inHang.bind(this);
     this.joinHang = this.joinHang.bind(this);
     this.localHangChange = this.localHangChange.bind(this);
-    this.getMutualFriends = this.getMutualFriends.bind(this);
+    //this.getMutualFriends = this.getMutualFriends.bind(this); /* Deprecated by Facebook :( */
     this.handleShareButton = this.handleShareButton.bind(this);
     this.toggleCalendar = this.toggleCalendar.bind(this);
   }
@@ -169,68 +169,68 @@ class HangItem extends React.Component {
     }
   }
 
-  getMutualFriends(user, uid, token){
-    console.log('getting mutual friends');
-    var getfbid = async () => {
-      return new Promise((resolve, reject) => {
-        const usersRef = firebase.database().ref(`/members/`);
-        usersRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
-          if (snapshot.exists()) {
-            var u = snapshot.val();
-            Object.entries(u).map((member) => {
-                console.log('got fbid:'+ member[1].fbid);
-                resolve(member[1].fbid);
-                return member[1].fbid;
-            });
-          }
-          return;
-        });
-      });
-    };
+  // getMutualFriends(user, uid, token){
+  //   console.log('getting mutual friends');
+  //   var getfbid = async () => {
+  //     return new Promise((resolve, reject) => {
+  //       const usersRef = firebase.database().ref(`/members/`);
+  //       usersRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
+  //         if (snapshot.exists()) {
+  //           var u = snapshot.val();
+  //           Object.entries(u).map((member) => {
+  //               console.log('got fbid:'+ member[1].fbid);
+  //               resolve(member[1].fbid);
+  //               return member[1].fbid;
+  //           });
+  //         }
+  //         return;
+  //       });
+  //     });
+  //   };
 
-    var getGraphRequest = async () => {
-      var fbid = await getfbid();
-      return new Promise((resolve, reject) => {
-        console.log(token);
-        if(token){
-          graph.get(fbid+'?fields=context.fields(mutual_friends)&access_token='+token, (err, res) => {
-              console.log(res);
-              if(!err){
-                if(res.context.mutual_friends){
-                  resolve(res.context.mutual_friends.summary.total_count);
-                }else{
-                  resolve(0);
-                }
-              }else{
-                throw err;
-              }
-          });
-        }
-      });
-    };
+  // var getGraphRequest = async () => {
+  //   var fbid = await getfbid();
+  //   return new Promise((resolve, reject) => {
+  //     console.log(token);
+  //     if(token){
+  //       graph.get(fbid+'?fields=context.fields(mutual_friends)&access_token='+token, (err, res) => {
+  //           console.log(res.context.mutual_friends);
+  //           if(!err){
+  //             if(res.context.mutual_friends){
+  //               resolve(res.context.mutual_friends.summary.total_count);
+  //             }else{
+  //               resolve(0);
+  //             }
+  //           }else{
+  //             throw err;
+  //           }
+  //       });
+  //     }
+  //   });
+  // };
+  //
+  // var friends = async () => {
+  //   var request = await getGraphRequest();
+  //   return new Promise((resolve, reject) => {
+  //     resolve(request);
+  //   });
+  // }
+  //
+  // return friends();
 
-    var friends = async () => {
-      var request = await getGraphRequest();
-      return new Promise((resolve, reject) => {
-        resolve(request);
-      });
-    }
-
-    return friends();
-
-  }
+  //}
 
   componentWillMount = (result) => {
 
-    var promise = this.getMutualFriends(this.props.user, this.props.hang.uid, this.props.token);
-
-    promise.then((result) => {
-      console.log(result);
-      this.setState({ mutualFriends:result });
-      if( result > 0 ){
-        this.setState({ visibility: 'show' })
-      }
-    }).catch((err) => console.log("rejected:", err));
+    // var promise = this.getMutualFriends(this.props.user, this.props.hang.uid, this.props.token);
+    //
+    // promise.then((result) => {
+    //   console.log(result);
+    //   this.setState({ mutualFriends:result });
+    //   if( result > 0 ){
+    //     this.setState({ visibility: 'show' })
+    //   }
+    // }).catch((err) => console.log("rejected:", err));
 
     if(this.props.hang.key){
       this.setState({ key: this.props.hang.key });

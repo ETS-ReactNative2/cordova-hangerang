@@ -103,10 +103,10 @@ class HangForm extends React.Component {
           displayName: 'Invite Only',
           value: 'invite'
         },
-        {
-          displayName: 'Friends+',
-          value: 'friends'
-        },
+        // {
+        //   displayName: 'Friends+',
+        //   value: 'friends'
+        // },
         {
           displayName: 'Public',
           value: 'public'
@@ -130,7 +130,7 @@ class HangForm extends React.Component {
                 <input type="hidden" name="username" onChange={this.props.handleChange} value={this.props.username} />
                 <div className="add-hang-wrapper">
                   <TextField className={"input-title"} type="text" name="title" placeholder="What to do?" onChange={this.props.handleChange} value={this.props.title} />
-                  <DateTimePicker className={"input-datetime"} name="datetime" placeholder="When?" onChange={this.props.setDate} value={this.props.datetime} DatePicker={DatePickerDialog} TimePicker={TimePickerDialog} timePickerDialogStyle={{height:'1vh'}} minutesStep={15} />
+                  <DateTimePicker format='MMM DD, YYYY hh:mm A' className={"input-datetime"} name="datetime" placeholder="When?" onChange={this.props.setDate} DatePicker={DatePickerDialog} TimePicker={TimePickerDialog} timePickerDialogStyle={{height:'1vh'}} minutesStep={15} />
                   <GoogleSuggest name="location" onLocChange={this.props.setLocation} onNameChange={this.props.setName} getLocation={this.props.location.formatted_address} onSubmit={this.props.submit} />
                 </div>
                 { this.props.user && this.props.title && this.props.datetime && this.props.location ?

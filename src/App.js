@@ -48,6 +48,8 @@ class App extends PureComponent {
       userhash: '',
       username: '',
       userphoto: '',
+      fbid: '',
+      uid: '',
       usernew: false, //set to true to test joyride tour
       datetime: '',
       location: '',
@@ -72,7 +74,7 @@ class App extends PureComponent {
       value: '',
       copied: false,
       getLocation: false,
-      visibility: 'friends',
+      visibility: 'invite',
       //joyride
       currentStep: 0,
       joyrideOverlay: true,
@@ -113,7 +115,9 @@ class App extends PureComponent {
 
   handleSubmit(e) {
     e.preventDefault();
-    this.setState({ mode: 'global' });
+    this.setState({
+      mode: 'global',
+    });
     const hangsRef = firebase.database().ref('hangs');
     var key = Date.now();
     key = key.toString().split("").map(num => parseInt(num, 0));
@@ -152,6 +156,7 @@ class App extends PureComponent {
        datetime: '',
        location: '',
        submit: true,
+       makeHang: false,
        newitem: itemHash
      });
    });
@@ -169,46 +174,6 @@ class App extends PureComponent {
   login() {
     this.setState({loggingIn: true});
     auth.signInWithRedirect(provider);
-    auth.getRedirectResult().then(function(result) {
-        console.log(result);
-        const user = result.user;
-        const usersRef = firebase.database().ref('members');
-        const u = {
-          email: user.email,
-          fbid: user.providerData[0].uid,
-          name: user.displayName,
-          token: result.credential.accessToken,
-          userphoto: user.photoURL,
-          uid: user.uid
-        }
-        this.setState({
-          user : user,
-          username: user.displayName,
-          userphoto: user.photoURL,
-          fbid: user.providerData[0].uid,
-          token: result.credential.accessToken,
-        });
-        usersRef.orderByChild("uid").equalTo(this.state.user.uid).once('value', (snapshot) => {
-          if (snapshot.exists()) {
-            console.log('user already exists');
-            return;
-          }else{
-            usersRef.push(u);
-            this.setState({usernew: true});
-            console.log('user created in database');
-            setTimeout(() => {
-              this.setState({
-                isReady: true,
-                isRunning: true,
-              });
-              this.toggleForm();
-            }, 3000);
-            return;
-          }
-        });
-      }).catch(function(error) {
-        console.log(error);
-      });
   }
 
   onHangChange(hangid) {
@@ -268,7 +233,6 @@ class App extends PureComponent {
       this.setState({ submit: true });
     }else{
       this.setState({ newitem: '' });
-      this.setState({ makeHang: true });
       this.setState({ submit: false });
       scroll.scrollTo(0);
     }
@@ -278,7 +242,6 @@ class App extends PureComponent {
     if( this.state.submit ){
       this.setState({
         submit: false,
-        makeHang: false,
         newitem: ''
       });
     }
@@ -310,13 +273,15 @@ class App extends PureComponent {
             this.setState({ userkey: key });
             console.log(user);
             Object.entries(user).map((u) => {
-              var token = u[1]['token'];
-              console.log(u);
               this.setState({
-                token: token,
-                loggingIn: false
+                loggingIn: false,
+                name: u[1]['username'],
+                userphoto: u[1]['userphoto'],
+                fbid: u[1]['fbid'],
+                token: u[1]['token'],
+                uid: u[1]['uid']
               });
-              return token;
+              return u[1]['token'];
             });
           }
         });
@@ -325,6 +290,42 @@ class App extends PureComponent {
   }
 
   componentDidMount() {
+    auth.getRedirectResult().then(function(result) {
+        if(!result.user){
+          //do nothing
+          console.log('no user yet');
+        }else{
+          const u = {
+            email: result.user.email,
+            fbid: result.user.providerData[0].uid,
+            name: result.user.displayName,
+            token: result.credential.accessToken,
+            userphoto: result.user.photoURL,
+            uid: result.user.uid
+          }
+          const usersRef = firebase.database().ref('members');
+          usersRef.orderByChild("uid").equalTo(result.user.uid).once('value', (snapshot) => {
+            if (snapshot.exists()) {
+              console.log('user already exists');
+              return;
+            }else{
+              usersRef.push(u);
+              this.setState({usernew: true});
+              console.log('user created in database');
+              setTimeout(() => {
+                this.setState({
+                  isReady: true,
+                  isRunning: true,
+                });
+                this.toggleForm();
+              }, 3000);
+              return;
+            }
+          });
+        }
+      }).catch(function(error) {
+        console.log(error);
+      });
 
       if(this.state.user === ''){
         this.setState({loggingIn: true});
