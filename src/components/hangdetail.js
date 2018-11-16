@@ -1,13 +1,17 @@
 import React from "react";
+import axios from 'axios';
 import firebase, {base} from './firebase.js';
 import HangItem from './hangitem.js';
+import Seo from './seo.js';
 
 class HangDetail extends React.Component {
   constructor() {
     super();
     this.state = {
       hang: [],
-      key: ''
+      image: [],
+      key: '',
+      token: '',
     }
     this.onHangChange = this.onHangChange.bind(this);
   }
@@ -42,6 +46,11 @@ class HangDetail extends React.Component {
           }
         }
       });
+      axios.get(`https://firebasestorage.googleapis.com/v0/b/fun-food-friends-cf17d.appspot.com/o/images%2F${this.props.hash}.png`)
+        .then(res => {
+          const token = res.downloadTokens;
+          this.setState({ token });
+        });
     }
   }
 
@@ -61,6 +70,11 @@ class HangDetail extends React.Component {
               mapsize={'600x300'}
               detail={true}
               openPopupBox={this.props.openPopupBox}
+            />
+            <Seo
+              title={"Hangerang: "+this.state.hang.title}
+              path={"/hang/"+this.props.hash}
+              image={`https://firebasestorage.googleapis.com/v0/b/fun-food-friends-cf17d.appspot.com/o/images%2F${this.props.hash}.png?alt=media&token=${this.state.token}`}
             />
           </section>
         : <div className="center"><i className="fa fa-circle-o-notch fa-spin"></i></div> }

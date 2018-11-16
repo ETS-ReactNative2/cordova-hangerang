@@ -1,9 +1,7 @@
 import React from "react";
 import ReactDOM from 'react-dom';
-import ReactDOMServer from 'react-dom/server';
 import rasterizeHTML from 'rasterizehtml';
 import firebase, {base} from './firebase.js';
-import graph from 'fb-react-sdk';
 import mmnt from 'moment';
 import Moment from 'react-moment';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
@@ -31,6 +29,8 @@ var hangHeader = {
   cursor: "pointer",
   fontFamily: "'Poppins', sans-serif",
   boxSizing: "border-box",
+  borderTopLeftRadius: "0.5rem",
+  borderTopRightRadius: "0.5rem",
 }
 
 var hangHeaderTitle = {
@@ -40,10 +40,6 @@ var hangHeaderTitle = {
   marginBottom: "0",
   textTransform: "capitalize",
   fontFamily: "'Poppins', sans-serif",
-}
-var hangHeaderTitleLink = {
-  color: "#fff",
-  textDecoration: "none",
 }
 
 var hangDate = {
@@ -61,6 +57,7 @@ var hangDate = {
   textTransform: "uppercase",
   textAlign: "center",
   borderCollapse: "collapse",
+  borderTopRightRadius: "0.5rem",
 }
 
 
@@ -105,18 +102,38 @@ class HangItem extends React.Component {
   }
 
   joinHang(hang, user, uid) {
-    const crewRef = firebase.database().ref(`/hangs/${hang}/crew/`);
     const member = {
       fbid: this.props.user.providerData[0].uid,
       uid: this.props.user.uid,
       user: this.props.user.displayName,
       userphoto: this.props.user.photoURL,
     }
+    const crewRef = firebase.database().ref(`/hangs/${hang}/crew/`);
     crewRef.orderByChild("uid").equalTo(uid).once('value', function(snapshot){
       if (snapshot.exists()) {
         console.log('already added to hang');
       }else{
         crewRef.push(member);
+      }
+    });
+    const hangRef = firebase.database().ref(`/hangs/${hang}`);
+    //Add Joiner to Host Crew
+    hangRef.once('value', function(snapshot){
+      if (snapshot.exists()) {
+        let hang = snapshot.val();
+        const usersRef = firebase.database().ref(`/members/`);
+        usersRef.orderByChild("uid").equalTo(hang['uid']).once('value', (snapshot) => {
+          var key = Object.keys(snapshot.val())[0];
+          console.log(key);
+          const crewRef = firebase.database().ref(`/members/${key}/crew/`);
+          crewRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
+            if (snapshot.exists()) {
+              console.log('already in crew');
+            }else{
+              crewRef.push(member);
+            }
+          });
+        });
       }
     });
     this.localHangChange(hang.key);
@@ -262,16 +279,20 @@ class HangItem extends React.Component {
   saveImg = () => {
     var canvas = ReactDOM.findDOMNode(this.refs.canvas);
 
-    let setMeta = (url) => {
-      var meta = document.querySelector('meta[property="og:image"]');
-      meta.content = url;
-      console.log(url);
-      document.getElementsByTagName('head')[0].appendChild(meta);
-      console.log(meta);
-    }
+    // let setMeta = (url) => {
+    //   if(url){
+    //     console.log(url);
+    //     var meta = document.querySelector('meta[property="og:image"]');
+    //     meta.content = url;
+    //     document.getElementsByTagName('head')[0].appendChild(meta);
+    //     document.getElementById("img").src = url;
+    //     console.log(meta);
+    //   }
+    // }
 
     let onResolve = (url) => {
-      setMeta(url);
+      console.log("Image found. Saved to " + url);
+      return;
     }
 
     let onReject = (error, func) => {
@@ -281,14 +302,12 @@ class HangItem extends React.Component {
           console.error("Unable to save image.");
         }, () => {
           let url = func.snapshot.downloadURL;
-          console.log("Image not found. Saved to " + url);
-          setMeta(url);
+          console.log("Image found. Location here: " + url);
           return;
       });
     }
 
     canvas.toBlob(blob => {
-      var url;
       var name = this.props.hang.hash + ".png";
       var f = storage.child("images/" + name);
       var task = f.put(blob);
@@ -327,9 +346,9 @@ class HangItem extends React.Component {
   }
 
   render() {
-    var baseUrl = window.location.protocol + "//" + window.location.host;
-    var hangLink = '/'+this.props.hang.hash;
-    var shareUrl = baseUrl+hangLink;
+    //var baseUrl = window.location.protocol + "//" + window.location.host;
+    var hangLink = '/hang/'+this.props.hang.hash;
+    var shareUrl = 'https://hang-serve.firebaseapp.com/hangs/'+this.props.hang.hash;
 
     let event = {
         title: this.props.hang.title,
@@ -379,16 +398,18 @@ class HangItem extends React.Component {
           </tbody>
         </table>
         } />
+        <div className="hang-item-graphic">
         <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
           <StaticGoogleMap
             size={this.props.mapsize}
             center={this.props.hang.lat+','+this.props.hang.lng}
-            zoom="17"
+            zoom="18"
             apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
           >
             <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
           </StaticGoogleMap>
         </a>
+        </div>
         </span>
         <span className="hang-info">
           <span className="hang-member">
@@ -442,7 +463,7 @@ class HangItem extends React.Component {
 
     let HangItem;
     if(this.props.detail === true){
-      HangItem = <div><canvas ref="canvas" width="600" height="400" style={{display: 'none'}}></canvas><div className={'hang-item '+this.state.visibility} key={this.state.key}>{Hang}</div></div>;
+      HangItem = <div><canvas ref="canvas" width="600" height="400" style={{display: 'none'}}></canvas><img alt="Hang" id="img" style={{display: 'none'}} /><div className={'hang-item '+this.state.visibility} key={this.state.key}>{Hang}</div></div>;
     }else{
       HangItem = <div className={'hang-item '+this.state.visibility} key={this.state.key}>{Hang}</div>;
     }

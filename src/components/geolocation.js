@@ -2,15 +2,39 @@ import React from "react";
 import Async from 'react-promise';
 import firebase from './firebase.js';
 import GeoFire from 'geofire';
+import mmnt from 'moment';
 import revgeo from 'reverse-geocoding';
 import {geolocated} from 'react-geolocated';
+import Client from 'predicthq';
 
 class Geolocation extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       address: this.props.address,
+      movies: []
     }
+  }
+
+  getEventful = (lat, lng) => {
+    let latlng = lat+','+lng;
+    window.EVDB.API.call("/events/search/", {
+      app_key: 'NGCsrxtcNTCCgjfW',
+      keywords: 'music',
+      location: latlng,
+      within: "5km",
+      date: "This Week",
+      sort: "date",
+      change_multi_day_start: false,
+    }, function(results) {
+      console.log(results);
+    });
+  }
+
+  uniq(a, param){
+    return a.filter(function(item, pos, array){
+        return array.map(function(mapItem){ return mapItem[param]; }).indexOf(item[param]) === pos;
+    })
   }
 
   getLocale(lat,lng,user){
@@ -19,14 +43,29 @@ class Geolocation extends React.Component {
       let usersGeoRef = firebase.database().ref('members-gl');
       let geoUser = new GeoFire(usersGeoRef);
 
-      console.log(user.uid);
-
       usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
         if (snapshot.exists()) {
           var key = Object.keys(snapshot.val())[0];
           geoUser.set(key, [lat, lng]).then(() => {
               this.props.setGeoLocation({ geoReady: true, lat, lng });
-              return;
+              //this.getEventful(lat, lng);
+              var client = new Client({access_token: "kMliRxAqc49wNf6jmtxJLRBYAqW2Tr"});
+              let m = mmnt();
+              client.events.search({
+                'limit': 25,
+                'within': '8km@'+lat+','+lng,
+                'start.gte': m.add(1, 'day').format('YYYY-MM-DD'),
+                'start.lt': m.add(5, 'day').format('YYYY-MM-DD'),
+                'relevance':'rank',
+                'category':'concerts,festivals,performing-arts,sports','sort':'start'})
+              .then((r) => {
+                  let results = r.result.results;
+                  this.props.setNearEvents({ results });
+                  return;
+              }).catch(function(error){
+               console.info(error);
+               return;
+              });
             }, function(error) {
             console.log("Error: " + error);
           });
@@ -45,7 +84,7 @@ class Geolocation extends React.Component {
               console.log(err);
               reject(err);
             }else{
-              let address = result.results[3].formatted_address;
+              let address = result.results[4].formatted_address;
               if(this.props.address !== address){
                 this.props.setAddress(address);
                 resolve(address);

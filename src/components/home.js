@@ -39,11 +39,17 @@ class Home extends Component {
             <h2>{"Let's Get Together."}</h2>
             {this.props.isLive ?
             <div>
-            {this.props.loggingIn ?
-             <span className={'white'}><i className="fa fa-circle-o-notch fa-spin white"></i> Logging In</span>
-            :<button className="btn facebook" onClick={this.props.login}>
-              Login with Facebook <i className={'fa fa-facebook-square'}></i>
-            </button>
+            {this.props.loggingIn || this.props.hideLogin ?
+             <span className={'white'}><i className="fa fa-circle-o-notch fa-spin white"></i></span>
+            :<div>
+              <button className="btn facebook" onClick={this.props.fblogin}>
+                Login with <strong>Facebook</strong> <i className={'fa fa-facebook-square'}></i>
+              </button> <button className="btn google" onClick={this.props.gglogin}>
+                Login with <strong>Google</strong> <i className={'fa fa-google'}></i>
+              </button> <button className="btn twitter" onClick={this.props.twlogin}>
+                Login with <strong>Twitter</strong> <i className={'fa fa-twitter'}></i>
+              </button>
+            </div>
             }
             </div>
             :

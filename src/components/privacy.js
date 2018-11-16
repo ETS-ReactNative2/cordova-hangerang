@@ -3,7 +3,7 @@ import React, {Component} from 'react';
 class Privacy extends Component {
   render() {
     return (
-      <div class="page">
+      <div className="page">
       <h1>Privacy Policy</h1>
       <p><strong>What information do we collect?</strong><br />
 

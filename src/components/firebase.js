@@ -10,9 +10,9 @@ const config = {
   };
 var app = firebase.initializeApp(config);
 var db = firebase.database(app);
-export const provider = new firebase.auth.FacebookAuthProvider();
-provider.addScope('user_friends');
-provider.setCustomParameters({'display': 'popup'});
+export const fbauth = new firebase.auth.FacebookAuthProvider();
+export const ggauth = new firebase.auth.GoogleAuthProvider();
+export const twauth = new firebase.auth.TwitterAuthProvider();
 export const auth = firebase.auth();
 export const base = Rebase.createClass(db);
 export default firebase;

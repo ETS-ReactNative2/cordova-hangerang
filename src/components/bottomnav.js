@@ -3,7 +3,7 @@ import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigati
 import Paper from 'material-ui/Paper';
 
 const recentsIcon = <i className="fa fa-clock-o"></i>;
-const globeIcon = <i className="fa fa-globe"></i>;
+const homeIcon = <i className="fa fa-home"></i>;
 const nearbyIcon = <i className="fa fa-map-marker"></i>;
 
 /**
@@ -41,8 +41,8 @@ class BottomNav extends Component {
             onClick={() => this.select(0) }
           />
           <BottomNavigationItem
-            label="Everywhere"
-            icon={globeIcon}
+            label="Home"
+            icon={homeIcon}
             onClick={() => this.select(1) }
           />
           <BottomNavigationItem
