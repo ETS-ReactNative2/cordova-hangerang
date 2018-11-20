@@ -33,6 +33,9 @@ import Privacy from './components/privacy.js';
 //import Scan from './components/scan.js';
 import TermsConditions from './components/terms.js';
 
+//Actions
+import { getPoints } from './components/points.js';
+
 if( window.location.host.includes("hangerang") ){
   ReactGA.initialize('UA-114709758-1');
   ReactGA.pageview(window.location.pathname + window.location.search);
@@ -60,6 +63,7 @@ class App extends PureComponent {
       usernew: false, //set to true to test joyride tour
       datetime: '',
       location: '',
+      points: 0,
       address: '',
       name: '',
       token: '',
@@ -372,35 +376,36 @@ class App extends PureComponent {
     });
   }
 
-  componentDidMount() {
-    auth.getRedirectResult().then(function(result) {
+  componentDidMount = () => {
+    auth.getRedirectResult().then((result) => {
         if(!result.user){
           //do nothing
           console.log('no user yet');
         }else{
-          const u = {
-            email: result.user.email,
-            name: result.user.displayName,
-            token: result.credential.accessToken,
-            userphoto: result.user.photoURL,
-            uid: result.user.uid
-          }
           const usersRef = firebase.database().ref('members');
           usersRef.orderByChild("uid").equalTo(result.user.uid).once('value', (snapshot) => {
             if (snapshot.exists()) {
               console.log('user already exists');
               return;
             }else{
-              usersRef.push(u);
               this.setState({usernew: true});
+              let points = getPoints("newuser");
+              usersRef.push({
+                email: result.user.email,
+                name: result.user.displayName,
+                token: result.credential.accessToken,
+                userphoto: result.user.photoURL,
+                uid: result.user.uid,
+                points:[ points ]
+              });
               console.log('user created in database');
-              setTimeout(() => {
-                this.setState({
-                  isReady: true,
-                  isRunning: true,
-                });
-                this.toggleForm();
-              }, 3000);
+              // setTimeout(() => {
+              //   this.setState({
+              //     isReady: true,
+              //     isRunning: true,
+              //   });
+              //   this.toggleForm();
+              // }, 3000);
               return;
             }
           });
@@ -426,6 +431,29 @@ class App extends PureComponent {
       var timelimit = later.setHours(now.getHours()-2)
 
       let id = setInterval(() => {
+        if(this.state.uid){
+          base.listenTo(`members`, {
+            context: this,
+            state: 'member',
+            asArray: true,
+            queries: {
+              orderByChild: 'uid',
+              equalTo: this.state.uid
+            },
+            then(data) {
+              if(data && data[0].points){
+                let tally = Object.values(data[0].points);
+                let points = 0;
+                if(tally.length > 0){
+                  tally.map((item) => {
+                    points = points + Object.values(item)[0];
+                  });
+                  this.setState({points});
+                }
+              }
+            }
+          });
+        }
         this.setState({ mountID: id });
         base.bindToState(`hangs`, {
           context: this,
@@ -456,8 +484,8 @@ class App extends PureComponent {
             }
             this.setState({ nearby, hangsReady: true, loggingIn: false });
           }
-        })
-      }, 3000);
+        });
+      }, 4000);
   }
 
   componentDidUpdate() {
@@ -652,8 +680,11 @@ class App extends PureComponent {
                 {this.state.user ?
                 <div className='user-profile'>
                   <div className='user-profile-wrapper'>
-                  <img src={this.state.user.photoURL} alt={"Profile Picture for:"+this.state.user.displayName} />
-                  <h4>{this.state.user.displayName}</h4>
+                    <div className='user-profile-image'>
+                    <span className='user-points'>{this.state.points}</span>
+                    <img src={this.state.user.photoURL} alt={"Profile Picture for:"+this.state.user.displayName} />
+                    </div>
+                    <h4>{this.state.user.displayName}</h4>
                   </div>
                 </div> : null
                 }
@@ -723,6 +754,7 @@ class App extends PureComponent {
                           }
                           {this.state.visiblehangs === 0 &&
                             this.state.mode === 'global' &&
+                            this.state.usernew &&
                             this.state.hangsReady &&
                             !this.state.makeHang &&
                             !this.state.hangKey ?
@@ -759,7 +791,7 @@ class App extends PureComponent {
                   <section className='display-hang'>
                   <div className='container'>
                     <Link className={'btn-back fa fa-angle-left'} to="/"></Link>
-                    <HangDetail user={this.state.user} username={this.state.user.displayName} userphoto={this.state.user.photoURL} token={this.state.token} hash={props.match.params.hash} openPopupBox={this.openPopupBox} />
+                    <HangDetail user={this.state.user} userkey={this.state.userkey} username={this.state.user.displayName} userphoto={this.state.user.photoURL} token={this.state.token} hash={props.match.params.hash} openPopupBox={this.openPopupBox} />
                   </div>
                   </section>
                 } />

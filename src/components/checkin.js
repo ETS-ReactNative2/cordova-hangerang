@@ -3,6 +3,8 @@ import firebase from './firebase.js';
 import moment from 'moment';
 import QrReader from 'react-qr-reader';
 
+import { getPoints } from './points.js'
+
 /*
 Humble Downtown: -LKXsfeTzOmVmHsEoWxD
 Humble Lomas: -LKyK8Vq4Z6mqjbJo3-v
@@ -47,7 +49,7 @@ class CheckIn extends React.Component {
           result: data
         })
       }
-      if(data && data.includes("goo.gl")){
+      if(data && data.includes("goo.gl") || data && data.includes("checkin")){
         this.setState({
           validURL: true
         })
@@ -62,100 +64,117 @@ class CheckIn extends React.Component {
         const placeRef = firebase.database().ref(`/places/${this.props.id}`);
         placeRef.once('value', (snapshot) => {
           this.setState({place: snapshot.val()});
-        }).then(() => {
-          let hangs = this.state.place['hangs'];
-          Object.keys(hangs).forEach((e) => {
-            let hangId = hangs[e];
-            const hangRef = firebase.database().ref(`/hangs/${hangId}`);
-            hangRef.once('value', (snapshot) => {
-              let hang = snapshot.val();
-              if(hang){
-                let time = moment(hang['datetime']).format("X");
-                var now = new Date();
-                var before = now.setHours(now.getHours() - 1);
-                var after = now.setHours(now.getHours() + 3);
-                before = Math.round( before*0.001 );
-                after = Math.round( after*0.001 );
-                console.log(before +"<"+ time +"<"+ after);
-                if(before < time && time < after) {
-                  this.setState({
-                    hang: hang,
-                    key: hangId
-                  });
-                  console.log('there is a hang happening here right now!');
-                }else{
-                  this.setState({hang: false});
-                  console.log('there is no hang happening here right now...');
-                }
-              }
-            }).then(() => {
-              if(this.state.hang){
-                const hangVisitRef = firebase.database().ref(`/hangs/${this.state.key}`);
-                if(this.props.uid === this.state.hang.uid){
-                  this.setState({inhang: true});
-                  hangVisitRef.once('value', (snapshot) => {
-                    if(snapshot){
-                      hangVisitRef.update({validhost: true});
-                    }
-                  });
-                }
-                let crew = this.state.hang['crew'];
-                if(crew && !this.state.inhang && !this.state.host){
-                  Object.keys(crew).forEach((p) => {
-                    let user = crew[p];
-                    console.log(user.uid);
-                    console.log(this.props.uid);
-                    if(user.uid === this.props.uid){
-                      this.setState({inhang: true});
-                      hangVisitRef.once('value', (snapshot) => {
-                        if(snapshot){
-                          hangVisitRef.update({validcrew: true});
-                        }
-                      });
-                    }
-                  });
-                }
-                let validate = setInterval(() => {
-                  if(this.state.hang && this.state.inhang && this.state.host && this.state.crew){
-                    clearInterval(validate);
-                    const usersRef = firebase.database().ref('members');
-                    usersRef.orderByChild("uid").equalTo(this.props.uid).once('value', (snapshot) => {
-                      if (snapshot.exists() && disloyalPlaces.indexOf(this.props.id) !== -1) {
-                        var key = Object.keys(snapshot.val())[0];
-                        const usersPlaceRef = firebase.database().ref(`/members/${key}/places/`);
-                        usersPlaceRef.orderByChild("pid").equalTo(this.props.id).once('value', (snapshot) => {
-                          if (snapshot.exists()) {
-                            console.log('Already Visited');
-                            return;
-                          }else{
-                            usersPlaceRef.push({
-                              pid: this.props.id,
-                            });
-                            this.setState({disloyal: true});
-                            console.log('Create a DisLoyal Visit');
-                            return;
-                          }
-                        });
-                      }
-                  });
-                }else{
-                  if(!this.state.key){
-                    //don't do a damn thing...
+        }).then((res) => {
+          if(this.state.place){
+            let hangs = this.state.place['hangs'];
+            Object.keys(hangs).forEach((e) => {
+              let hangId = hangs[e];
+              const hangRef = firebase.database().ref(`/hangs/${hangId}`);
+              hangRef.once('value', (snapshot) => {
+                let hang = snapshot.val();
+                if(hang){
+                  let time = moment(hang['datetime']).subtract(0,'hours').format("X");
+                  var now = new Date();
+                  var before = now.setHours(now.getHours() - 1);
+                  var after = now.setHours(now.getHours() + 3);
+                  before = Math.round( before*0.001 );
+                  after = Math.round( after*0.001 );
+                  console.log(before +"<"+ time +"<"+ after);
+                  if(before < time && time < after) {
+                    this.setState({
+                      hang: hang,
+                      key: hangId
+                    });
+                    console.log('there is a hang happening here right now!');
                   }else{
-                    const hangValidRef = firebase.database().ref(`/hangs/${this.state.key}`);
-                    hangValidRef.once('value', (snapshot) => {
+                    this.setState({hang: false});
+                    console.log('there is no hang happening here right now...');
+                  }
+                }
+              }).then(() => {
+                if(this.state.hang){
+                  const hangVisitRef = firebase.database().ref(`/hangs/${this.state.key}`);
+                  if(this.props.uid === this.state.hang.uid){
+                    this.setState({inhang: true});
+                    hangVisitRef.once('value', (snapshot) => {
                       if(snapshot){
-                        let hang = snapshot.val();
-                        this.setState({host: hang.validhost});
-                        this.setState({crew: hang.validcrew});
+                        hangVisitRef.update({validhost: true});
                       }
                     });
                   }
-                }
-              }, 3000);
-            }
+                  let crew = this.state.hang['crew'];
+                  if(crew && !this.state.inhang && !this.state.host){
+                    Object.keys(crew).forEach((p) => {
+                      let user = crew[p];
+                      console.log(p);
+                      console.log(user.uid);
+                      console.log(this.props.uid);
+                      if(user.uid === this.props.uid){
+                        this.setState({inhang: true});
+                        let hangCrewRef = firebase.database().ref(`/hangs/${this.state.key}/crew/${p}`);
+                        hangVisitRef.once('value', (snapshot) => {
+                          if(snapshot){
+                            hangVisitRef.update({validcrew: true});
+                            hangCrewRef.update({validcrew: true});
+                          }
+                        });
+                      }
+                    });
+                  }
+                  let validate = setInterval(() => {
+                    if(this.state.hang && this.state.inhang && this.state.host && this.state.crew){
+                      const usersRef = firebase.database().ref('members');
+                      usersRef.orderByChild("uid").equalTo(this.props.uid).once('value', (snapshot) => {
+                        if (snapshot.exists()) {
+                          var key = Object.keys(snapshot.val())[0];
+                          const crewPointsRef = firebase.database().ref(`/members/${key}/points/`);
+                          let points = getPoints(`checkin-${this.state.hang.visibility}`);
+                          crewPointsRef.push(points);
+                        }
+                        if (snapshot.exists() && disloyalPlaces.indexOf(this.props.id) !== -1) {
+                          const usersPlaceRef = firebase.database().ref(`/members/${key}/places/`);
+                          usersPlaceRef.orderByChild("pid").equalTo(this.props.id).once('value', (snapshot) => {
+                            if (snapshot.exists()) {
+                              console.log('Already Visited');
+                              return;
+                            }else{
+                              usersPlaceRef.push({ pid: this.props.id });
+                              this.setState({disloyal: true});
+                              console.log('Create a DisLoyal Visit');
+                              return;
+                            }
+                          });
+                        }
+                    });
+                    usersRef.orderByChild("uid").equalTo(this.state.hang.uid).once('value', (snapshot) => {
+                      if (snapshot.exists()) {
+                        var key = Object.keys(snapshot.val())[0];
+                        console.log(key);
+                        const hostPointsRef = firebase.database().ref(`/members/${key}/points/`);
+                        let points = getPoints(`checkin-${this.state.hang.visibility}`);
+                        hostPointsRef.push(points);
+                      }
+                    });
+                    clearInterval(validate);
+                  }else{
+                    if(!this.state.key){
+                      //don't do a damn thing...
+                    }else{
+                      let hangValidRef = firebase.database().ref(`/hangs/${this.state.key}`);
+                      hangValidRef.once('value', (snapshot) => {
+                        if(snapshot){
+                          let hang = snapshot.val();
+                          this.setState({host: hang.validhost});
+                          this.setState({crew: hang.validcrew});
+                        }
+                      });
+                    }
+                  }
+                }, 2000);
+              }
+              });
             });
-          });
+          }
         });
       }
     }

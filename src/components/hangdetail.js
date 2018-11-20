@@ -1,7 +1,9 @@
 import React from "react";
 import axios from 'axios';
+import QRCode from 'qrcode.react';
 import firebase, {base} from './firebase.js';
 import HangItem from './hangitem.js';
+import GeoCheck from './geocheck.js';
 import Seo from './seo.js';
 
 class HangDetail extends React.Component {
@@ -12,15 +14,36 @@ class HangDetail extends React.Component {
       image: [],
       key: '',
       token: '',
+      placekey: '',
+      chckloc: false,
+      geoReady: '',
+      geoCheck: false
     }
     this.onHangChange = this.onHangChange.bind(this);
+    this.getPlaceKey = this.getPlaceKey.bind(this);
   }
+
+  setAddress = (address) => this.setState({ address })
+  setGeoCheck = (geoCheck) => this.setState({ geoCheck });
+  setCheckLoc = (chckloc) => this.setState(chckloc);
 
   onHangChange(hangid) {
     const hangRef = firebase.database().ref(`/hangs/${hangid}`);
     hangRef.once('value', (snapshot) => {
-       let newhang = snapshot.val();
-       this.setState({ hang: newhang });
+       let hang = snapshot.val();
+       this.setState({ hang });
+     });
+  }
+
+  getPlaceKey(place) {
+    const placesRef = firebase.database().ref(`/places/`);
+    placesRef
+    .orderByChild('pid')
+    .equalTo(place)
+    .limitToFirst(1)
+    .once('value', (snapshot) => {
+       let key = Object.keys(snapshot.val())[0];
+       this.setState({ placekey: key });
      });
   }
 
@@ -43,6 +66,7 @@ class HangDetail extends React.Component {
               state: 'hang',
               keepKeys: true
             });
+            this.getPlaceKey(this.state.hang.place);
           }
         }
       });
@@ -71,6 +95,33 @@ class HangDetail extends React.Component {
               detail={true}
               openPopupBox={this.props.openPopupBox}
             />
+            {this.state.key && this.props.userphoto === this.state.hang.userphoto ?
+            <div className="center">
+            {this.state.chckloc ?
+              <GeoCheck
+              user={this.props.user}
+              hang={this.state.hang}
+              getGeoCheck={this.getGeoCheck}
+              setCheckLoc={this.setCheckLoc}
+              hangKey={this.state.key}
+              userkey={this.props.userkey}
+               />
+            : ''}
+            {this.state.hang.validhost ?
+              <div className="hang-qr">
+                <QRCode
+                  value={"/checkin/"+this.state.placekey}
+                  size='256'
+                  fgColor='#000000'
+                  bgColor='#ffffff'
+                  level='L'
+                  renderAs='svg'
+                />
+              </div>
+            : <a className="btn" onClick={() => this.setCheckLoc({chckloc: true})}>
+            Host Check-In
+              </a>}
+            </div> : ''}
             <Seo
               title={"Hangerang: "+this.state.hang.title}
               path={"/hang/"+this.props.hash}

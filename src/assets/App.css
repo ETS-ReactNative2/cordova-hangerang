@@ -211,7 +211,7 @@ canvas {
     font-size: 1rem;
   }
 }
-@media only screen and (min-width: 1050px) {
+@media only screen and (min-width: 1051px) {
   .jumbo p {
     font-size: 1.2rem;
   }
@@ -349,6 +349,41 @@ canvas {
   color: #fff;
   font-size: 2rem;
 }
+.user-points {
+  position: absolute;
+  font-size: 9px;
+  padding: 0 0.2rem;
+  height: 1rem;
+  line-height: 1rem;
+  background: rgba(1,172,237,0.66);
+  border-top-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  color: white;
+}
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .user-points {
+    left: 1.5rem;
+  }
+}
+@media only screen and (min-width: 801px) and (max-width: 1050px) {
+  .user-points {
+    right: -1rem !important;
+    top: -0.4rem;
+  }
+}
+@media only screen and (min-width: 1051px) {
+  .user-points {
+    right: 90% !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-right-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+  }
+}
+.user-profile-image {
+  width: 30px;
+  position: relative;
+}
 .user-profile {
   display: flex;
   align-items: center;
@@ -417,6 +452,13 @@ canvas {
 .user-profile-wrapper {
   display: flex;
   align-items: center;
+  position: relative;
+}
+@media only screen and (min-width: 1051px) {
+  .user-profile-wrapper {
+    position: absolute;
+    right: 4rem;
+  }
 }
 .add-hang,
 .add-hang-fixed {
@@ -999,6 +1041,14 @@ header button.btn {
   position: relative;
 }
 .hang-detail {
+  width: 100%;
+  margin: 0 auto;
+  height: auto;
+}
+.hang-qr {
+  padding: 0 1rem;
+}
+.hang-qr svg {
   width: 100%;
   margin: 0 auto;
   height: auto;
