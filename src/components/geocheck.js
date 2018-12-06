@@ -5,7 +5,8 @@ import GeoFire from 'geofire';
 import geolib from 'geolib';
 import revgeo from 'reverse-geocoding';
 import { geolocated } from 'react-geolocated';
-import { getPoints } from './points.js'
+
+import { getPoints } from '../helpers/points.js';
 
 class GeoCheck extends React.Component {
   constructor(props) {
@@ -60,14 +61,14 @@ class GeoCheck extends React.Component {
 
   render() {
     return (
-    <div className="user-geolocation center">
+    <div className="center">
         { !this.props.isGeolocationAvailable
           ? <p>Your browser does not support Geolocation</p>
           : !this.props.isGeolocationEnabled
             ? <p>Geolocation is not enabled</p>
             : !this.props.coords
               ?
-              <div><p>Checking location <i className="fa fa-circle-o-notch fa-spin"></i></p></div>
+              <p>Checking location <i className="fa fa-circle-o-notch fa-spin"></i></p>
               : !this.state.checkedIn ?
                  <Async
                  promise={this.getLocale(this.props.coords.latitude,this.props.coords.longitude,this.props.user,this.props.hangKey)}

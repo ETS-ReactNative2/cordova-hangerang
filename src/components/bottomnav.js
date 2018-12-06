@@ -3,7 +3,7 @@ import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigati
 import Paper from 'material-ui/Paper';
 
 const recentsIcon = <i className="fa fa-clock-o"></i>;
-const homeIcon = <i className="fa fa-home"></i>;
+const hangsIcon = <i className="fa fa-bolt"></i>;
 const nearbyIcon = <i className="fa fa-map-marker"></i>;
 
 /**
@@ -14,35 +14,31 @@ const nearbyIcon = <i className="fa fa-map-marker"></i>;
 class BottomNav extends Component {
   constructor() {
     super();
-    this.state = {
-      selectedIndex: 1,
-    }
-    this.select = this.select.bind(this);
   }
 
   select(e) {
     var mode = {
-      0: "nearby",
-      1: "global",
+      0: "hangs",
+      1: "nearby",
       2: "today",
     };
-    //console.log(e);
-    this.setState({ selectedIndex: e });
+    console.log(e);
+    this.props.setSelectedIndex( e );
     this.props.setMode( mode[e] );
   }
 
   render() {
     return (
       <Paper zDepth={1} className="footer-nav">
-        <BottomNavigation selectedIndex={this.state.selectedIndex}>
+        <BottomNavigation selectedIndex={this.props.selectedIndex}>
           <BottomNavigationItem
-            label="Nearby"
-            icon={nearbyIcon}
+            label="Hangs"
+            icon={hangsIcon}
             onClick={() => this.select(0) }
           />
           <BottomNavigationItem
-            label="Home"
-            icon={homeIcon}
+            label="Nearby"
+            icon={nearbyIcon}
             onClick={() => this.select(1) }
           />
           <BottomNavigationItem

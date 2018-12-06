@@ -4,6 +4,9 @@ import Scroll from 'react-scroll';
 import MailchimpSubscribe from "react-mailchimp-subscribe";
 import { ShareButtons, generateShareIcon } from 'react-share';
 
+import Login from './login.js';
+import Register from './register.js';
+
 var scroller = Scroll.scroller;
 
 const FacebookIcon = generateShareIcon('facebook');
@@ -11,10 +14,27 @@ const TwitterIcon = generateShareIcon('twitter');
 const EmailIcon = generateShareIcon('email');
 const { FacebookShareButton, TwitterShareButton, EmailShareButton } = ShareButtons;
 
+const h2msg = [
+  "Let's Get Together.",
+  "Own The FOMO.",
+  "Because Virtual Isn't Reality.",
+  "Your New Social Life Awaits.",
+];
+
 class Home extends Component {
   constructor() {
     super();
+    this.state = {
+      h2msg: h2msg[Math.floor(Math.random()*h2msg.length)],
+      timeout: false,
+    }
     this.goToSection = this.goToSection.bind(this);
+  }
+
+  componentDidMount = () => {
+    setTimeout(() => {
+      this.setState({timeout: true});
+    }, 15000);
   }
 
   goToSection(section){
@@ -36,20 +56,47 @@ class Home extends Component {
           <h1>Hangerang</h1>
           </div>
           <div className="jumbo-content">
-            <h2>{"Let's Get Together."}</h2>
+            <h2>{this.state.h2msg}</h2>
+            <h4>We've Been Expecting You!</h4>
             {this.props.isLive ?
             <div>
+            {this.props.loggingIn && this.state.timeout ?
+             <p className="white">Stuck? <a onClick={this.props.logout}>Logout</a></p>
+            : ''}
             {this.props.loggingIn || this.props.hideLogin ?
              <span className={'white'}><i className="fa fa-circle-o-notch fa-spin white"></i></span>
             :<div>
-              <button className="btn facebook" onClick={this.props.fblogin}>
-                Login with <strong>Facebook</strong> <i className={'fa fa-facebook-square'}></i>
-              </button> <button className="btn google" onClick={this.props.gglogin}>
-                Login with <strong>Google</strong> <i className={'fa fa-google'}></i>
-              </button> <button className="btn twitter" onClick={this.props.twlogin}>
-                Login with <strong>Twitter</strong> <i className={'fa fa-twitter'}></i>
-              </button>
-            </div>
+              {this.props.login && !this.props.register ?
+                <Login
+                  toggleLogin={this.props.toggleLogin}
+                  toggleReg={this.props.toggleReg}
+                  setUserName={this.props.setUserName}
+                />
+              : ''}
+              {this.props.register && !this.props.login ?
+                <Register
+                  toggleLogin={this.props.toggleLogin}
+                  toggleReg={this.props.toggleReg}
+                />
+              : ''}
+              {!this.props.login && !this.props.register ?
+                <div>
+                  <div className="auth-ui">
+                    <button className="btn facebook" onClick={this.props.fbLogin}>
+                      <i className={'fa fa-facebook-square'}></i> Sign in with <strong>Facebook</strong>
+                    </button> <button className="btn google" onClick={this.props.ggLogin}>
+                      <i className={'fa fa-google'}></i> Sign in with <strong>Google</strong>
+                    </button> <button className="btn twitter" onClick={this.props.twLogin}>
+                      <i className={'fa fa-twitter'}></i> Sign in with <strong>Twitter</strong>
+                    </button>
+                  </div>
+                  <div className="white small">or</div>
+                  <a className="white underline" onClick={this.props.toggleLogin}>
+                    Sign in the old fashioned way
+                  </a>
+                </div>
+              : ''}
+              </div>
             }
             </div>
             :
@@ -81,9 +128,8 @@ class Home extends Component {
           <div className="jumbo-content">
             <span>What?</span>
             <h2>{"A Whole World to Experience!"}</h2>
-            <p>Hangerang is a place for <strong>Hangs</strong>.</p>
-            <p><strong>Hangs</strong> are real world experiences <br />with real people.</p>
-            <p>Catch a movie. Try a new restaurant. Go on a hike. <br />The possibilities are limitless!</p>
+            <p><strong>Hangerang</strong> is a place for casual adventures <br />with real people. (aka "Hangs")</p>
+            <p>Make more <strong>connections</strong> and bring excitement into the <strong>everyday</strong>!</p>
             <a className="section-nav" onClick={() => this.goToSection("section-three") }>
               <i className="fa fa-chevron-down"></i>
               Why?
@@ -93,9 +139,9 @@ class Home extends Component {
         <section className='jumbo section-three' id="section-three" name="section-three">
           <div className="jumbo-content">
             <span>Why?</span>
-            <h2>{"Social Media Is Lonely"}</h2>
-            <p>Staring at your screen and feeling envious about other {"people's"} lives is no way to live.<br />
-            Spending time with people <strong>in real life</strong> has been scientifically proven to be beneficial for mental and physical health.</p>
+            <h2>Likes &ne; Life</h2>
+            <p>We think <strong>social media</strong> isn't really all that <strong>social</strong>.</p>
+            <p>Spending time with people <strong>in real life</strong> has been scientifically proven<br /> to be beneficial for mental and physical health.</p>
             <a className="section-nav" onClick={() => this.goToSection("section-four") }>
               <i className="fa fa-chevron-down"></i>
               Who?
@@ -105,14 +151,13 @@ class Home extends Component {
         <section className='jumbo section-four' id="section-four" name="section-four">
           <div className="jumbo-content">
             <span>Who?</span>
-            <h2>{"It's Up To You"}</h2>
+            <h2>{"It's Up To You!"}</h2>
             <p>
-            Hang out with who you want, when you want.
+            <strong>Hang</strong> with who you want, when you want.
             </p>
-            <p>There are 3 levels of privacy access to the Hangs you create: <b>Invite Only</b>, <b>Friends+</b>, and <b>Public</b>. <br />
-            You may not want to invite the entire city to your dinner party, but you might be open to making some new friends
-            while checking out the newest local tap room. Absolutely up to you!
-            </p>
+            <p>We've created the easiest platform to <strong>discover</strong>, <strong>create</strong>, and <strong>invite</strong> friends to
+            local happenings.</p>
+            <p>Every time you Hang, you'll have the opportunity to <strong>earn points</strong> to use on our upcoming <strong>marketplace</strong>!</p>
             <a className="section-nav" onClick={() => this.goToSection("section-one") }>
               <i className="fa fa-chevron-up"></i>
               {"Ok. I'm ready!"}

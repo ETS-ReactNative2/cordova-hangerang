@@ -48,19 +48,6 @@ canvas {
 .fa-trash {
   color: #aaa;
 }
-.fa.fa-bolt {
-  color: #e9ec00;
-  background: #000;
-  text-align: center;
-  border-radius: 50%;
-  font-size: 0.85rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  line-height: 1.25rem;
-  margin: 0;
-  padding: 0.033rem;
-  border: none;
-}
 .fa.fa-link {
   color: #fff;
   background: #f41c21;
@@ -119,16 +106,24 @@ canvas {
 .white {
   color: white;
 }
+.red {
+  color: red;
+}
+.underline {
+  text-decoration: underline;
+}
 .btn.facebook {
   background: #3b5998;
   margin: 0 0.25rem 1rem;
   width: 200px;
+  white-space: nowrap;
 }
 .btn.google {
   background: #fff;
   color: #000;
   margin: 0 0.25rem 1rem;
   width: 200px;
+  white-space: nowrap;
 }
 .btn.google .fa {
   color: #D93025;
@@ -138,24 +133,32 @@ canvas {
   color: #fff;
   margin: 0 0.25rem 1rem;
   width: 200px;
+  white-space: nowrap;
 }
 .btn.twitter .fa {
   color: #fff
 }
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  color: lightgrey;
+}
 .container {
   max-width: 1100px;
   margin: 0 auto;
-  padding-top: calc(112px + 1rem);
+  padding-top: calc(112px + 1.5rem);
   padding-bottom: 55px;
 }
 @media only screen and (max-width: 400px) {
   .container {
-    padding-top: calc(65px + 1rem);
+    padding-top: calc(65px + 1.5rem);
   }
 }
 @media only screen and (min-width: 400px) and (max-width: 1050px) {
   .container {
-    padding-top: calc(70px + 1rem);
+    padding-top: calc(70px + 1.5rem);
   }
 }
 .wrapper {
@@ -188,19 +191,26 @@ canvas {
   font-weight: bold;
   line-height: 1;
   color: #fff;
-  margin: 0 1rem 2rem;
+  margin: 2rem 1rem 0;
 }
 @media only screen and (min-width: 400px) and (max-width: 1050px) {
   .jumbo h2 {
-    margin: 1rem 2rem;
+    margin: 2rem 2rem 0;
     font-size: 3rem;
   }
 }
 @media only screen and (min-width: 1050px) {
   .jumbo h2 {
-    margin: 1rem 2rem;
+    margin: 2rem 2rem 0;
     font-size: 5rem;
   }
+}
+.jumbo h4 {
+  font-size: 1rem;
+  font-weight: normal;
+  line-height: 1;
+  color: #fff;
+  margin: 1rem;
 }
 .jumbo p {
   color: #fff;
@@ -257,6 +267,9 @@ canvas {
 }
 .jumbo .share-ui div {
   padding: 0;
+}
+.jumbo .auth-ui {
+  padding-top: 1rem;
 }
 .jumbo .share-buttons {
   width: 125px;
@@ -610,13 +623,12 @@ div.input-datetime div.input-datetime div {
 .joyride-step-4 .input-location {
   z-index: 9999;
 }
-.claim-hang {
+.btn-hang-action {
   width: 69px;
   height: 50px;
   background: #ec008c;
   color: #fff;
   font-size: 0.8rem;
-  font-weight: bold;
   padding: 0.33rem;
   margin: 0;
   border: none;
@@ -626,11 +638,18 @@ div.input-datetime div.input-datetime div {
   border-bottom-left-radius: 0.5rem;
   cursor: pointer;
 }
-.claim-hang:hover {
+.btn-hang-action:hover {
   background: #000;
 }
-.claim-hang .fa-plus {
+.btn-hang-action .fa-plus {
   color: #fff;
+}
+.btn-hang-action.host-checkin {
+  background: #34b6ee;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: normal;
+  line-height: 1.4;
 }
 .customWrapper {
   font-size: 0.75rem;
@@ -641,7 +660,7 @@ div.input-datetime div.input-datetime div {
 .display-hang {
   width: 100%;
 }
-.display-hang .fa-spin {
+.display-hang .page-spinner .fa-spin {
   font-size: 2rem;
   margin: 6rem auto;
   display: block;
@@ -697,6 +716,13 @@ button.btn {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.btn.btn-page-wrapper {
+  background: black;
+  color: white;
+}
+.btn.login {
+  background: #000;
 }
 .btn.make {
   width: calc(50vw - 4rem);
@@ -1147,7 +1173,8 @@ header button.btn {
   padding-left: 0.1rem;
 }
 .hang-ui button.hang-join,
-.hang-ui button.hang-leave {
+.hang-ui button.hang-leave,
+.hang-ui button.hang-check-in {
   background: #34b6ee;
   color: #fff;
   font-size: 0.66rem;
@@ -1158,6 +1185,9 @@ header button.btn {
 }
 .hang-ui button.hang-leave {
   background: #ec008c;
+}
+.hang-ui button.hang-check-in {
+  margin-right: 0.25rem;
 }
 .hang-member {
   position: relative;
@@ -1340,6 +1370,109 @@ header button.btn {
   border-top: 10px solid transparent;
   border-bottom: 0;
   border-left: 10px solid #ec008c;
+}
+.crew {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.crew-member {
+  width: calc(25% - 2rem);
+  height: auto;
+  margin: 1rem 1rem 0;
+}
+.crew-member > .crew-member-image {
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+}
+.crew-member-name {
+  margin: 0;
+  line-height: 1.2;
+  font-size: 0.75rem;
+}
+.member-points-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+.member-points-table thead {
+  font-size: 0.75rem;
+  border-bottom: 1px solid black;
+}
+.member-points-table td {
+  padding: 0.5rem;
+}
+.member-points-table tr:nth-child(even) {
+  background: #f5f5f5;
+}
+.member-points-total-row {
+  border-top: 1px solid black;
+}
+.member-points {
+  text-align: right;
+}
+.member-points-head {
+  text-align: right;
+}
+.member-points-total {
+  text-align: right;
+  font-weight: bold;
+  color: #34b6ee;
+}
+.member-points-border {
+  width: 100%;
+  border-top: 1px solid #f5f5f5;
+}
+.member-points-table {
+    width: 100%;
+    border-spacing: 0;
+}
+
+.member-points-table thead,
+.member-points-table tbody,
+.member-points-table tr,
+.member-points-table th,
+.member-points-table td { display: block; }
+
+.member-points-table thead tr {
+    width: 100%;
+}
+
+.member-points-table tr:after {  /* clearing float */
+    content: ' ';
+    display: block;
+    visibility: hidden;
+    clear: both;
+}
+
+.member-points-table tbody {
+    height: auto;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.member-points-table thead th {
+  width: calc(50% - 1rem);
+  padding: 0 0.5rem;
+  float: left;
+}
+
+.member-points-table tbody tr td:nth-child(1){
+    width: calc(75% - 1rem);
+    float: left;
+}
+
+.member-points-table tbody tr td:nth-child(2){
+    width: calc(25% - 1rem);
+    float: left;
+}
+
+.member-points-table tfoot td {
+    width: calc(50% - 1rem);
+    float: left;
 }
 .orange {
   display: block;
@@ -1637,7 +1770,8 @@ header button.btn {
   cursor: no-drop !important;
 }
 
-.checkin {
+.page-wrapper {
+  position: relative;
   padding: 1rem;
   background: #fff;
   text-align: center;
@@ -1647,24 +1781,30 @@ header button.btn {
   border-radius: 1rem;
 }
 
+.page-wrapper.register {
+  width: 300px;
+  max-width: none;
+}
+
 @media only screen and (min-width: 720px) {
-  .checkin {
+  .page-wrapper,
+  .page-wrapper.register {
     width: 400px;
   }
 }
 
-.checkin h3 {
+.page-wrapper h3 {
   margin: 0;
 }
 
-.checkin img {
+.page-wrapper img {
   width: 6rem;
   height: 6rem;
   padding: 0;
   margin: 0;
 }
 
-.checkin a {
+.page-wrapper a {
   display: block;
   border-radium: 0.5rem;
 }

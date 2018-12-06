@@ -83,6 +83,16 @@ class HangDetail extends React.Component {
         <div className="wrapper">
         {Object.keys(this.state.hang).length > 0 ?
           <section className="hang-detail">
+            {this.state.chckloc ?
+              <GeoCheck
+              user={this.props.user}
+              hang={this.state.hang}
+              getGeoCheck={this.getGeoCheck}
+              setCheckLoc={this.setCheckLoc}
+              hangKey={this.state.key}
+              userkey={this.props.userkey}
+               />
+            : ''}
             <HangItem
               onHangChange={this.onHangChange}
               hang={this.state.hang}
@@ -94,19 +104,10 @@ class HangDetail extends React.Component {
               mapsize={'600x300'}
               detail={true}
               openPopupBox={this.props.openPopupBox}
+              setCheckLoc={this.setCheckLoc}
             />
             {this.state.key && this.props.userphoto === this.state.hang.userphoto ?
             <div className="center">
-            {this.state.chckloc ?
-              <GeoCheck
-              user={this.props.user}
-              hang={this.state.hang}
-              getGeoCheck={this.getGeoCheck}
-              setCheckLoc={this.setCheckLoc}
-              hangKey={this.state.key}
-              userkey={this.props.userkey}
-               />
-            : ''}
             {this.state.hang.validhost ?
               <div className="hang-qr">
                 <QRCode
@@ -118,9 +119,7 @@ class HangDetail extends React.Component {
                   renderAs='svg'
                 />
               </div>
-            : <a className="btn" onClick={() => this.setCheckLoc({chckloc: true})}>
-            Host Check-In
-              </a>}
+            : ''}
             </div> : ''}
             <Seo
               title={"Hangerang: "+this.state.hang.title}
@@ -128,7 +127,7 @@ class HangDetail extends React.Component {
               image={`https://firebasestorage.googleapis.com/v0/b/fun-food-friends-cf17d.appspot.com/o/images%2F${this.props.hash}.png?alt=media&token=${this.state.token}`}
             />
           </section>
-        : <div className="center"><i className="fa fa-circle-o-notch fa-spin"></i></div> }
+        : <div className="center page-spinner"><i className="fa fa-circle-o-notch fa-spin"></i></div> }
         </div>
       );
     }

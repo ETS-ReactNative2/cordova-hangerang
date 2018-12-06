@@ -1,5 +1,6 @@
 import React from "react";
 import { base } from  './firebase.js';
+import ButtonLink from './buttonlink.js';
 
 class HangCrew extends React.Component {
 
@@ -24,6 +25,7 @@ class HangCrew extends React.Component {
                   </span>
                   {this.props.uid === member[1].uid ?
                   <span className="hang-ui">
+                    <ButtonLink classy={'hang-check-in'} to={'/checkin/scan'} text={'Check-In'} />
                     <button onClick={() => this.leaveHang(this.props.hang, member[0])} className="hang-leave">Leave</button>
                   </span>
                   :

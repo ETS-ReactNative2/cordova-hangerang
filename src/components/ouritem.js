@@ -1,11 +1,12 @@
 import React from "react";
-import ReactDOM from 'react-dom';
-import firebase from './firebase.js';
+import firebase, {base} from './firebase.js';
 import GeoFire from 'geofire';
 import Hashids from 'hashids';
+import mmnt from 'moment';
 import Moment from 'react-moment';
-import revgeo from 'reverse-geocoding';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
+
+import HangLink from './hanglink.js';
 
 var hashids = new Hashids('', 5);
 
@@ -71,48 +72,22 @@ var hangDay = {
   lineHeight: "0",
 }
 
-class GhostItem extends React.Component {
+class OurItem extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      address: '',
-      placename: '',
-      placeid: '',
-      hangKey: '',
-    }
-    this.getPlace = this.getPlace.bind(this);
-    this.placeCallback = this.placeCallback.bind(this);
-  }
-
-  placeCallback = (results, status) => {
-    if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-      if(results[1]){
-        this.setState({placeid: results[1]['id']});
-        this.setState({placename: results[1]['name']});
-      }
+      inhang: false,
+      key: '',
+      hang: '',
+      uid: '',
+      shortUrl: '',
+      mutualFriends: 0,
+      openCalendar: false,
+      visibility: 'hide'
     }
   }
 
-  getPlace = (lat,lng) => {
-    let maploc = new window.google.maps.LatLng(lat,lng);
-    let mapdom = ReactDOM.findDOMNode(this.refs.map);
-
-    let map = new window.google.maps.Map(mapdom, {
-        center: maploc,
-        zoom: 15
-      });
-
-    let request = {
-      location: maploc,
-      radius: '1'
-    };
-
-    let service = new window.google.maps.places.PlacesService(map);
-    service.nearbySearch(request, this.placeCallback);
-  }
-
-  claimHang(title,user,datetime,lat,lng,address,e) {
-    e.preventDefault();
+  claimHang(title,user,datetime,timestamp,lat,lng,address,place,placename) {
     const hangsRef = firebase.database().ref('hangs');
     var key = Date.now();
     key = key.toString().split("").map(num => parseInt(num, 0));
@@ -128,12 +103,12 @@ class GhostItem extends React.Component {
       user: user.displayName,
       userphoto: user.photoURL,
       datetime: datetime,
-      timestamp: Date.parse(datetime),
+      timestamp: timestamp,
       lat: lat,
       lng: lng,
       address: address,
-      place: this.state.placeid,
-      placename: this.state.placename,
+      place: place,
+      placename: placename,
       visibility: 'invite',
     }
     hangsRef.push(hang).then((snap) => {
@@ -155,7 +130,7 @@ class GhostItem extends React.Component {
      name: hang.placename,
    }
    const placeRef = firebase.database().ref('places');
-   placeRef.orderByChild("pid").equalTo(this.state.placeid).once('value', (snapshot) => {
+   placeRef.orderByChild("pid").equalTo(place).once('value', (snapshot) => {
        if (snapshot.exists()) {
          var place = snapshot.val();
          let key = Object.keys(place)[0];
@@ -179,54 +154,32 @@ class GhostItem extends React.Component {
    });
   }
 
-  getLocale(lat,lng){
-    var geocode = {
-      'latitude': lat,
-      'longitude': lng,
-    };
-
-    var location = async () => {
-    return new Promise((resolve, reject) => {
-      revgeo.location(geocode, (err, result) => {
-          if(err){
-            console.log(err);
-            reject(err);
-          }else{
-            let address = result.results[0].formatted_address;
-            if(this.state.address !== address){
-              this.setState({address});
-              resolve(address);
-            }
-            resolve();
-            return;
-          }
-          return;
-        });
-      });
-    };
-
-    return location();
-  }
-
-  componentDidMount(){
-    this.getPlace(this.props.event.location[1],this.props.event.location[0]);
+  removeHang(id) {
+    base.remove(`/hangs/${id}`);
+    this.props.onHangChange(id);
   }
 
   render() {
-    let Event =
+    let event = {
+        title: this.props.hang.title,
+        description: this.props.hang.title+" with "+this.props.hang.user+" (powered by Hangerang)",
+        location: this.props.hang.address,
+        startTime: this.props.hang.datetime,
+        endTime: mmnt(this.props.hang.datetime).add(2, 'hours')
+    }
+
+    let icon = { textOnly: 'none' };
+
+    let Hang =
       <span>
         <span ref="detail">
         <table width="100%" style={hangHeader} className={'hang-header'}>
           <tbody>
           <tr>
             <td>
-              <h2 style={hangHeaderTitle}>{this.props.event.title}</h2>
+              <h2 style={hangHeaderTitle}>{this.props.hang.title}</h2>
               <span className="hang-placetime">
-                <Moment
-                  format="hh:mm a"
-                  className="hang-time">
-                  {this.props.event.start}
-                </Moment> @ {this.state.placename}
+                <Moment format="hh:mm a" className="hang-time">{this.props.hang.datetime}</Moment> @ {this.props.hang.placename}
               </span>
             </td>
             <td>
@@ -234,32 +187,34 @@ class GhostItem extends React.Component {
                 <tbody>
                 <tr>
                   <td>
-                <Moment format="MMM" className="hang-month" style={hangMonth}>{this.props.event.start}</Moment>
+                <Moment format="MMM" className="hang-month" style={hangMonth}>{this.props.hang.datetime}</Moment>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                <Moment format="DD" className="hang-day" style={hangDay}>{this.props.event.start}</Moment>
+                <Moment format="DD" className="hang-day" style={hangDay}>{this.props.hang.datetime}</Moment>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                <Moment format="YYYY" className="hang-year" style={hangYear}>{this.props.event.start}</Moment>
+                <Moment format="YYYY" className="hang-year" style={hangYear}>{this.props.hang.datetime}</Moment>
                   </td>
                 </tr>
                 </tbody>
               </table>
               <button
                 className="btn-hang-action"
-                onClick={(e) =>
+                onClick={() =>
                   this.claimHang(
-                    this.props.event.title,
+                    this.props.hang.title,
                     this.props.user,
-                    this.props.event.start,
-                    this.props.event.location[1],
-                    this.props.event.location[0],
-                    this.state.placename,
-                    e
+                    this.props.hang.datetime,
+                    this.props.hang.timestamp,
+                    this.props.hang.lat,
+                    this.props.hang.lng,
+                    this.props.hang.address,
+                    this.props.hang.place,
+                    this.props.hang.placename,
                   )
                 }>
                 <i className="fa fa-plus"></i> Add
@@ -269,23 +224,43 @@ class GhostItem extends React.Component {
           </tbody>
         </table>
         <div className="hang-item-graphic">
-        <div id="map" ref={'map'} />
-        <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.event.location[1]+'%2C'+this.props.event.location[0]+'&query_place_id='+this.props.event.place}>
+        <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
           <StaticGoogleMap
             size={this.props.mapsize}
-            center={this.props.event.location[1]+','+this.props.event.location[0]}
+            center={this.props.hang.lat+','+this.props.hang.lng}
             zoom="18"
             apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
           >
-            <Marker location={this.props.event.location[1]+','+this.props.event.location[0]} color="0xff0000" />
+            <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
           </StaticGoogleMap>
         </a>
         </div>
+        {this.props.hang.uid === this.props.user.uid ?
+          <span className="hang-info">
+            <span className="hang-member">
+              <img src={this.props.hang.userphoto} alt={this.props.hang.user} className="hang-host" />
+              <span>
+              <b>Host</b><br />
+              { this.props.hang.fbid ? <a href={'https://www.facebook.com/'+this.props.hang.fbid} target="_blank">{this.props.hang.user}</a>
+              : <span>{this.props.hang.user}</span> }
+              </span>
+              { this.props.hang.uid !== this.props.user.uid && this.state.mutualFriends !== 0  ?
+              <span className="hang-number">{this.state.mutualFriends}</span>
+              : '' }
+            </span>
+            <span className="hang-ui">
+              <i className="fa fa-trash" onClick={() => this.removeHang(this.state.key)}><span>Remove Hang</span></i>
+            </span>
+          </span>
+         : ''}
         </span>
       </span>;
 
-      return <div className={'hang-item show'} key={this.state.key}>{Event}</div>;
+    let OurItem = <div className={'hang-item show'} key={this.state.key}>{Hang}</div>;
+
+    return OurItem;
+
   }
 }
 
-export default GhostItem;
+export default OurItem;

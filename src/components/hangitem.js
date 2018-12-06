@@ -31,6 +31,7 @@ var hangHeader = {
   boxSizing: "border-box",
   borderTopLeftRadius: "0.5rem",
   borderTopRightRadius: "0.5rem",
+  zIndex: "1",
 }
 
 var hangHeaderTitle = {
@@ -348,7 +349,7 @@ class HangItem extends React.Component {
   render() {
     //var baseUrl = window.location.protocol + "//" + window.location.host;
     var hangLink = '/hang/'+this.props.hang.hash;
-    var shareUrl = 'https://hang-serve.firebaseapp.com/hangs/'+this.props.hang.hash;
+    var shareUrl = 'https://invite.hngrng.com/hangs/'+this.props.hang.hash;
 
     let event = {
         title: this.props.hang.title,
@@ -393,6 +394,16 @@ class HangItem extends React.Component {
                 </tr>
                 </tbody>
               </table>
+              {this.props.detail === true &&
+               this.props.hang.uid === this.props.user.uid ?
+                <button
+                  className="btn-hang-action host-checkin"
+                  onClick={(e) =>
+                    this.props.setCheckLoc({chckloc: true})
+                  }>
+                  <i className="fa fa-map-marker white"></i> <strong>Host</strong> Check-In
+                </button>
+              : ''}
             </td>
           </tr>
           </tbody>

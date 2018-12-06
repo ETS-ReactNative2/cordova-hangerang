@@ -3,7 +3,7 @@ import firebase from './firebase.js';
 import moment from 'moment';
 import QrReader from 'react-qr-reader';
 
-import { getPoints } from './points.js'
+import { getPoints } from '../helpers/points.js';
 
 /*
 Humble Downtown: -LKXsfeTzOmVmHsEoWxD
@@ -250,13 +250,13 @@ class CheckIn extends React.Component {
         return (
             <span>
             {this.props.id === 'scan' ?
-            <div className='checkin'>
+            <div className='page-wrapper'>
               <h3>Hang Check In</h3>
               <hr />
               {this.state.validURL ? this.ValidQR() : '' }
               {!this.state.validURL ? this.ScanQR() : ''}
             </div> :
-            <div className='checkin'>
+            <div className='page-wrapper'>
               <h3>Hang Check In</h3>
               <hr />
               {this.CheckIn()}

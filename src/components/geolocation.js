@@ -57,7 +57,7 @@ class Geolocation extends React.Component {
                 'start.gte': m.add(1, 'day').format('YYYY-MM-DD'),
                 'start.lt': m.add(5, 'day').format('YYYY-MM-DD'),
                 'relevance':'rank',
-                'category':'concerts,festivals,performing-arts,sports','sort':'start'})
+                'category':'community,concerts,festivals,performing-arts,sports','sort':'start'})
               .then((r) => {
                   let results = r.result.results;
                   this.props.setNearEvents({ results });

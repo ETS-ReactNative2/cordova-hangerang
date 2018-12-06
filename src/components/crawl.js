@@ -68,7 +68,7 @@ class Crawl extends React.Component {
 
     render() {
         return (
-            <div className="checkin">
+            <div className="page-wrapper">
               <h3>Coffee Crawl</h3>
               <hr />
               <div className={'locations'}>
