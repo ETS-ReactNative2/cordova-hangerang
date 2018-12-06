@@ -451,7 +451,7 @@ class App extends PureComponent {
 
       var now = new Date();
       var later = new Date();
-      var timelimit = later.setHours(now.getHours()-2)
+      var timelimit = later.setHours(now.getHours()-4)
 
       let id = setInterval(() => {
         if(this.state.uid){
@@ -496,7 +496,7 @@ class App extends PureComponent {
                   } else {
                     let geoQuery = geoHang.query({
                       center: location,
-                      radius: 32
+                      radius: 40
                     });
 
                     geoQuery.on("key_entered", function(key){
@@ -645,8 +645,8 @@ class App extends PureComponent {
           <HangItem key={hang.key} mapsize={'600x300'} onHangChange={this.onHangChange} openPopupBox={this.openPopupBox} hang={hang} user={this.state.user} token={this.state.token} />
         )
       }
-      console.log(hang.user);
       if( this.state.nearby.includes(hang.key) && hang.user === 'Harvey Hang'){
+        console.log(hang.user);
         return (
           <OurItem
             key={hang.key}
