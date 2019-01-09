@@ -5,6 +5,7 @@ import GeoFire from 'geofire';
 import Hashids from 'hashids';
 import Moment from 'react-moment';
 import revgeo from 'reverse-geocoding';
+import geolib from 'geolib';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
 
 var hashids = new Hashids('', 5);
@@ -87,6 +88,10 @@ class GhostItem extends React.Component {
   placeCallback = (results, status) => {
     if (status === window.google.maps.places.PlacesServiceStatus.OK) {
       if(results[1]){
+        if(results[1].photos && results[1].photos.length > 0){
+          var placePhotoUrl = results[1].photos[0].getUrl({maxWidth:640});
+          this.setState({placeimg: placePhotoUrl});
+        }
         this.setState({placeid: results[1]['id']});
         this.setState({placename: results[1]['name']});
       }
@@ -210,9 +215,25 @@ class GhostItem extends React.Component {
 
   componentDidMount(){
     this.getPlace(this.props.event.location[1],this.props.event.location[0]);
+    let distance = geolib.getDistance(
+      {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
+      {latitude: this.props.event.location[1], longitude: this.props.event.location[0]}
+    );
+    distance = (distance/1000) * 0.621371;
+    distance = distance.toFixed(1);
+    this.setState({distance});
   }
 
   render() {
+    var hangImage = {
+      backgroundImage: "url('"+this.state.placeimg+"')",
+      backgroundPosition: "center center",
+      backgroundSize: "cover",
+      overflow: "hidden",
+      height: "175px",
+      borderBottomLeftRadius: "0.5rem",
+      borderBottomRightRadius: "0.5rem",
+    }
     let Event =
       <span>
         <span ref="detail">
@@ -226,7 +247,7 @@ class GhostItem extends React.Component {
                   format="hh:mm a"
                   className="hang-time">
                   {this.props.event.start}
-                </Moment> @ {this.state.placename}
+                </Moment> @ {this.state.placename} &bull; {this.state.distance} mi.
               </span>
             </td>
             <td>
@@ -262,24 +283,28 @@ class GhostItem extends React.Component {
                     e
                   )
                 }>
-                <i className="fa fa-plus"></i> Add
+                <i className="fa fa-plus"></i> Join
               </button>
             </td>
           </tr>
           </tbody>
         </table>
-        <div className="hang-item-graphic">
-        <div id="map" ref={'map'} />
-        <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.event.location[1]+'%2C'+this.props.event.location[0]+'&query_place_id='+this.props.event.place}>
-          <StaticGoogleMap
-            size={this.props.mapsize}
-            center={this.props.event.location[1]+','+this.props.event.location[0]}
-            zoom="18"
-            apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
-          >
-            <Marker location={this.props.event.location[1]+','+this.props.event.location[0]} color="0xff0000" />
-          </StaticGoogleMap>
-        </a>
+        <div className="hang-item-graphic" style={hangImage}>
+        {!this.state.placeimg &&
+        <div>
+          <div id="map" ref={'map'} />
+          <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.event.location[1]+'%2C'+this.props.event.location[0]+'&query_place_id='+this.props.event.place}>
+            <StaticGoogleMap
+              size={this.props.mapsize}
+              center={this.props.event.location[1]+','+this.props.event.location[0]}
+              zoom="18"
+              apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
+            >
+              <Marker location={this.props.event.location[1]+','+this.props.event.location[0]} color="0xff0000" />
+            </StaticGoogleMap>
+          </a>
+        </div>
+        }
         </div>
         </span>
       </span>;

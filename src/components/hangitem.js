@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import rasterizeHTML from 'rasterizehtml';
 import firebase, {base} from './firebase.js';
 import mmnt from 'moment';
+import geolib from 'geolib';
 import Moment from 'react-moment';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
 import { ShareButtons, generateShareIcon } from 'react-share';
@@ -100,6 +101,39 @@ class HangItem extends React.Component {
     //this.getMutualFriends = this.getMutualFriends.bind(this); /* Deprecated by Facebook :( */
     this.handleShareButton = this.handleShareButton.bind(this);
     this.toggleCalendar = this.toggleCalendar.bind(this);
+    this.getPlace = this.getPlace.bind(this);
+    this.placeCallback = this.placeCallback.bind(this);
+  }
+
+  placeCallback = (results, status) => {
+    if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+      if(results[1]){
+        if(results[1].photos && results[1].photos.length > 0){
+          var placePhotoUrl = results[1].photos[0].getUrl({maxWidth:640});
+          this.setState({placeimg: placePhotoUrl});
+        }
+        this.setState({placeid: results[1]['id']});
+        this.setState({placename: results[1]['name']});
+      }
+    }
+  }
+
+  getPlace = (lat,lng) => {
+    let maploc = new window.google.maps.LatLng(lat,lng);
+    let mapdom = ReactDOM.findDOMNode(this.refs.map);
+
+    let map = new window.google.maps.Map(mapdom, {
+        center: maploc,
+        zoom: 15
+      });
+
+    let request = {
+      location: maploc,
+      radius: '1'
+    };
+
+    let service = new window.google.maps.places.PlacesService(map);
+    service.nearbySearch(request, this.placeCallback);
   }
 
   joinHang(hang, user, uid) {
@@ -325,7 +359,6 @@ class HangItem extends React.Component {
   };
 
   componentDidMount = (result) => {
-
     const hangRef = firebase.database().ref(`/hangs/${this.state.key}`);
 
     hangRef.once('value', (snapshot) => {
@@ -344,9 +377,26 @@ class HangItem extends React.Component {
       setTimeout(this.saveImg, 1000);
     }
 
+    if(this.props.geoReady){
+      this.getPlace(this.props.hang.lat,this.props.hang.lng);
+      let distance = geolib.getDistance(
+        {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
+        {latitude: this.props.hang.lat, longitude: this.props.hang.lng}
+      );
+      distance = (distance/1000) * 0.621371;
+      distance = distance.toFixed(1);
+      this.setState({distance});
+    }
   }
 
   render() {
+    var hangImage = {
+      backgroundImage: "url('"+this.state.placeimg+"')",
+      backgroundPosition: "center center",
+      backgroundSize: "cover",
+      overflow: "hidden",
+      height: "175px",
+    }
     //var baseUrl = window.location.protocol + "//" + window.location.host;
     var hangLink = '/hang/'+this.props.hang.hash;
     var shareUrl = 'https://invite.hngrng.com/hangs/'+this.props.hang.hash;
@@ -409,17 +459,22 @@ class HangItem extends React.Component {
           </tbody>
         </table>
         } />
-        <div className="hang-item-graphic">
-        <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
-          <StaticGoogleMap
-            size={this.props.mapsize}
-            center={this.props.hang.lat+','+this.props.hang.lng}
-            zoom="18"
-            apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
-          >
-            <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
-          </StaticGoogleMap>
-        </a>
+        <div className="hang-item-graphic" style={hangImage}>
+        {!this.state.placeimg &&
+        <div>
+          <div id="map" ref={'map'} />
+          <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
+            <StaticGoogleMap
+              size={this.props.mapsize}
+              center={this.props.hang.lat+','+this.props.hang.lng}
+              zoom="18"
+              apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
+            >
+              <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
+            </StaticGoogleMap>
+          </a>
+        </div>
+        }
         </div>
         </span>
         <span className="hang-info">

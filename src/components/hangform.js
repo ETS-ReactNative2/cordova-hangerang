@@ -122,7 +122,7 @@ class HangForm extends React.Component {
           <button className="center" onClick={this.props.toggleSubmit()}>{"Make Another?"}</button>
           </section>
         : <section className={this.props.makeHang ? 'add-hang add-hang-tall' : 'add-hang'}>
-              <h3 className={'add-hang-title'}>{this.props.makeHang ? "Let's Make A Hang!" : "Wanna Make A Hang?"}</h3>
+              <h3 className={'add-hang-title'}>{this.props.makeHang ? "Let's Make A Hang!" : ""}</h3>
               <div className={'add-hang-form'}>
               { this.props.makeHang ?
               <div>
@@ -140,11 +140,11 @@ class HangForm extends React.Component {
                 </div> : ''
                 }
               </form>
-              <i className={'fa fa-chevron-up'} onClick={this.props.toggleForm}></i></div>
+              <i className={'fa fa-chevron-down'} onClick={this.props.toggleForm}></i></div>
               : '' }
               </div>
               { !this.props.makeHang ?
-                <i className={'fa fa-chevron-down'} onClick={this.props.toggleForm}></i>
+                <i className={'fa fa-plus'} onClick={this.props.toggleForm}></i>
               : '' }
         </section> }
         </MuiThemeProvider>

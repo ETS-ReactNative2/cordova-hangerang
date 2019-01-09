@@ -16,89 +16,94 @@ class Geolocation extends React.Component {
     }
   }
 
-  getEventful = (lat, lng) => {
-    let latlng = lat+','+lng;
-    window.EVDB.API.call("/events/search/", {
-      app_key: 'NGCsrxtcNTCCgjfW',
-      keywords: 'music',
-      location: latlng,
-      within: "5km",
-      date: "This Week",
-      sort: "date",
-      change_multi_day_start: false,
-    }, function(results) {
-      console.log(results);
-    });
-  }
+  // getEventful = (lat, lng) => {
+  //   let latlng = lat+','+lng;
+  //   window.EVDB.API.call("/events/search/", {
+  //     app_key: 'NGCsrxtcNTCCgjfW',
+  //     keywords: 'music',
+  //     location: latlng,
+  //     within: "5km",
+  //     date: "This Week",
+  //     sort: "date",
+  //     change_multi_day_start: false,
+  //   }, function(results) {
+  //     console.log(results);
+  //   });
+  // }
 
-  uniq(a, param){
-    return a.filter(function(item, pos, array){
-        return array.map(function(mapItem){ return mapItem[param]; }).indexOf(item[param]) === pos;
-    })
+  uniq(array, prop) {
+   var newArray = [];
+   var lookupObject  = {};
+   for(var i in array) {
+     lookupObject[array[i][prop]] = array[i];
+   }
+   for(i in lookupObject) {
+     newArray.push(lookupObject[i]);
+   }
+   return newArray;
   }
 
   getLocale(lat,lng,user){
+    let usersRef = firebase.database().ref('members');
+    let usersGeoRef = firebase.database().ref('members-gl');
+    let geoUser = new GeoFire(usersGeoRef);
 
-      let usersRef = firebase.database().ref('members');
-      let usersGeoRef = firebase.database().ref('members-gl');
-      let geoUser = new GeoFire(usersGeoRef);
-
-      usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
-        if (snapshot.exists()) {
-          var key = Object.keys(snapshot.val())[0];
-          geoUser.set(key, [lat, lng]).then(() => {
-              this.props.setGeoLocation({ geoReady: true, lat, lng });
-              //this.getEventful(lat, lng);
-              var client = new Client({access_token: "kMliRxAqc49wNf6jmtxJLRBYAqW2Tr"});
-              let m = mmnt();
-              client.events.search({
-                'limit': 25,
-                'within': '8km@'+lat+','+lng,
-                'start.gte': m.add(1, 'day').format('YYYY-MM-DD'),
-                'start.lt': m.add(5, 'day').format('YYYY-MM-DD'),
-                'relevance':'rank',
-                'category':'community,concerts,festivals,performing-arts,sports','sort':'start'})
-              .then((r) => {
-                  let results = r.result.results;
-                  this.props.setNearEvents({ results });
-                  return;
-              }).catch(function(error){
-               console.info(error);
-               return;
-              });
-            }, function(error) {
-            console.log("Error: " + error);
-          });
-        }
-      });
-
-      var geocode = {
-          'latitude': lat,
-          'longitude': lng
-      };
-
-      var location = async () => {
-      return new Promise((resolve, reject) => {
-        revgeo.location(geocode, (err, result) => {
-            if(err){
-              console.log(err);
-              reject(err);
-            }else{
-              let address = result.results[4].formatted_address;
-              if(this.props.address !== address){
-                this.props.setAddress(address);
-                resolve(address);
-              }
-              resolve();
-              return;
-            }
-            return;
-          });
+    usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
+      if (snapshot.exists()) {
+        var key = Object.keys(snapshot.val())[0];
+        geoUser.set(key, [lat, lng]).then(() => {
+            this.props.setGeoLocation({ geoReady: true, lat, lng });
+            //this.getEventful(lat, lng);
+            var client = new Client({access_token: "GHL45LeU1QhCh7bzT8BiC0hwZ3z8xT"});
+            let m = mmnt();
+            client.events.search({
+              'limit': 25,
+              'within': '10km@'+lat+','+lng,
+              'start.gte': m.add(1, 'day').format('YYYY-MM-DD'),
+              'start.lt': m.add(3, 'day').format('YYYY-MM-DD'),
+              'relevance':'rank',
+              'category':'concerts,festivals,performing-arts,sports','sort':'start'})
+            .then((r) => {
+                let results = r.result.results;
+                results = this.uniq(results, "title");
+                this.props.setNearEvents({ results });
+                return;
+            }).catch(function(error){
+             console.info(error);
+             return;
+            });
+          }, function(error) {
+          console.log("Error: " + error);
         });
-      };
+      }
+    });
 
-      return location();
+    var geocode = {
+        'latitude': lat,
+        'longitude': lng
+    };
 
+    var location = async () => {
+    return new Promise((resolve, reject) => {
+      revgeo.location(geocode, (err, result) => {
+          if(err){
+            console.log(err);
+            reject(err);
+          }else{
+            let address = result.results[4].formatted_address;
+            if(this.props.address !== address){
+              this.props.setAddress(address);
+              resolve(address);
+            }
+            resolve();
+            return;
+          }
+          return;
+        });
+      });
+    };
+
+    return location();
   }
 
   render() {

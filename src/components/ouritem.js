@@ -1,9 +1,12 @@
 import React from "react";
+import ReactDOM from 'react-dom';
 import firebase, {base} from './firebase.js';
 import GeoFire from 'geofire';
 import Hashids from 'hashids';
 import mmnt from 'moment';
 import Moment from 'react-moment';
+import revgeo from 'reverse-geocoding';
+import geolib from 'geolib';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
 
 import HangLink from './hanglink.js';
@@ -154,22 +157,65 @@ class OurItem extends React.Component {
    });
   }
 
+  placeCallback = (results, status) => {
+    if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+      if(results[1]){
+        if(results[1].photos && results[1].photos.length > 0){
+          var placePhotoUrl = results[1].photos[0].getUrl({maxWidth:640});
+          this.setState({placeimg: placePhotoUrl});
+        }
+        this.setState({placeid: results[1]['id']});
+        this.setState({placename: results[1]['name']});
+      }
+    }
+  }
+
+  getPlace = (lat,lng) => {
+    let maploc = new window.google.maps.LatLng(lat,lng);
+    let mapdom = ReactDOM.findDOMNode(this.refs.map);
+
+    let map = new window.google.maps.Map(mapdom, {
+        center: maploc,
+        zoom: 15
+      });
+
+    let request = {
+      location: maploc,
+      radius: '1'
+    };
+
+    let service = new window.google.maps.places.PlacesService(map);
+    service.nearbySearch(request, this.placeCallback);
+  }
+
   removeHang(id) {
     base.remove(`/hangs/${id}`);
     this.props.onHangChange(id);
   }
 
-  render() {
-    let event = {
-        title: this.props.hang.title,
-        description: this.props.hang.title+" with "+this.props.hang.user+" (powered by Hangerang)",
-        location: this.props.hang.address,
-        startTime: this.props.hang.datetime,
-        endTime: mmnt(this.props.hang.datetime).add(2, 'hours')
+  componentDidMount = (result) => {
+    if(this.props.geoReady){
+      this.getPlace(this.props.hang.lat,this.props.hang.lng);
+      let distance = geolib.getDistance(
+        {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
+        {latitude: this.props.hang.lat, longitude: this.props.hang.lng}
+      );
+      distance = (distance/1000) * 0.621371;
+      distance = distance.toFixed(1);
+      this.setState({distance});
     }
+  }
 
-    let icon = { textOnly: 'none' };
-
+  render() {
+    var hangImage = {
+      backgroundImage: "url('"+this.state.placeimg+"')",
+      backgroundPosition: "center center",
+      backgroundSize: "cover",
+      overflow: "hidden",
+      height: "175px",
+      borderBottomLeftRadius: "0.5rem",
+      borderBottomRightRadius: "0.5rem",
+    }
     let Hang =
       <span>
         <span ref="detail">
@@ -223,36 +269,23 @@ class OurItem extends React.Component {
           </tr>
           </tbody>
         </table>
-        <div className="hang-item-graphic">
-        <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
-          <StaticGoogleMap
-            size={this.props.mapsize}
-            center={this.props.hang.lat+','+this.props.hang.lng}
-            zoom="18"
-            apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
-          >
-            <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
-          </StaticGoogleMap>
-        </a>
+        <div className="hang-item-graphic" style={hangImage}>
+        {!this.state.placeimg &&
+        <div>
+          <div id="map" ref={'map'} />
+          <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.hang.lat+'%2C'+this.props.hang.lng+'&query_place_id='+this.props.hang.place}>
+            <StaticGoogleMap
+              size={this.props.mapsize}
+              center={this.props.hang.lat+','+this.props.hang.lng}
+              zoom="18"
+              apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
+            >
+              <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
+            </StaticGoogleMap>
+          </a>
         </div>
-        {this.props.hang.uid === this.props.user.uid ?
-          <span className="hang-info">
-            <span className="hang-member">
-              <img src={this.props.hang.userphoto} alt={this.props.hang.user} className="hang-host" />
-              <span>
-              <b>Host</b><br />
-              { this.props.hang.fbid ? <a href={'https://www.facebook.com/'+this.props.hang.fbid} target="_blank">{this.props.hang.user}</a>
-              : <span>{this.props.hang.user}</span> }
-              </span>
-              { this.props.hang.uid !== this.props.user.uid && this.state.mutualFriends !== 0  ?
-              <span className="hang-number">{this.state.mutualFriends}</span>
-              : '' }
-            </span>
-            <span className="hang-ui">
-              <i className="fa fa-trash" onClick={() => this.removeHang(this.state.key)}><span>Remove Hang</span></i>
-            </span>
-          </span>
-         : ''}
+        }
+        </div>
         </span>
       </span>;
 

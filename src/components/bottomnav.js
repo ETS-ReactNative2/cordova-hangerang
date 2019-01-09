@@ -5,6 +5,7 @@ import Paper from 'material-ui/Paper';
 const recentsIcon = <i className="fa fa-clock-o"></i>;
 const hangsIcon = <i className="fa fa-bolt"></i>;
 const nearbyIcon = <i className="fa fa-map-marker"></i>;
+let addIcon = <i className="fa fa-plus"></i>;
 
 /**
  * A simple example of `BottomNavigation`, with three labels and icons
@@ -18,13 +19,18 @@ class BottomNav extends Component {
 
   select(e) {
     var mode = {
-      0: "hangs",
-      1: "nearby",
-      2: "today",
+      0: "nearby",
+      1: "add",
+      2: "hangs",
     };
-    console.log(e);
-    this.props.setSelectedIndex( e );
-    this.props.setMode( mode[e] );
+    if( mode[e] == "add" ){
+      this.props.toggleForm();
+      this.props.setSelectedIndex( e );
+    }else{
+      this.props.hideForm();
+      this.props.setSelectedIndex( e );
+      this.props.setMode( mode[e] );
+    }
   }
 
   render() {
@@ -32,20 +38,25 @@ class BottomNav extends Component {
       <Paper zDepth={1} className="footer-nav">
         <BottomNavigation selectedIndex={this.props.selectedIndex}>
           <BottomNavigationItem
-            label="Hangs"
-            icon={hangsIcon}
+            label="Nearby"
+            icon={nearbyIcon}
             onClick={() => this.select(0) }
           />
           <BottomNavigationItem
-            label="Nearby"
-            icon={nearbyIcon}
+            label="Add"
+            icon={addIcon}
             onClick={() => this.select(1) }
           />
           <BottomNavigationItem
+            label="Hangs"
+            icon={hangsIcon}
+            onClick={() => this.select(2) }
+          />
+          {/*<BottomNavigationItem
             label="Today"
             icon={recentsIcon}
             onClick={() => this.select(2) }
-          />
+          />*/}
         </BottomNavigation>
       </Paper>
     );

@@ -60,7 +60,7 @@ class Home extends Component {
             <h4>We've Been Expecting You!</h4>
             {this.props.isLive ?
             <div>
-            {this.props.loggingIn && this.state.timeout ?
+            {this.props.hideLogin && this.state.timeout ?
              <p className="white">Stuck? <a onClick={this.props.logout}>Logout</a></p>
             : ''}
             {this.props.loggingIn || this.props.hideLogin ?

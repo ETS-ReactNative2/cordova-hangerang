@@ -31,6 +31,7 @@ import GhostItem from './components/ghostitem.js';
 import HangItem from './components/hangitem.js';
 import HangDetail from './components/hangdetail.js';
 import HangForm from './components/hangform.js';
+import HeaderPoints from './components/headerpoints.js';
 import Home from './components/home.js';
 import OurItem from './components/ouritem.js';
 import Points from './components/points.js';
@@ -94,7 +95,7 @@ class App extends PureComponent {
       lat: '',
       lng: '',
       mode: 'nearby',
-      selectedIndex: 1,
+      selectedIndex: 0,
       value: '',
       copied: false,
       getLocation: false,
@@ -117,6 +118,7 @@ class App extends PureComponent {
     this.clearSubmit = this.clearSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.hideForm = this.hideForm.bind(this);
     this.fbLogin = this.fbLogin.bind(this);
     this.ggLogin = this.ggLogin.bind(this);
     this.twLogin = this.twLogin.bind(this);
@@ -243,6 +245,7 @@ class App extends PureComponent {
   }
 
   logout() {
+    clearInterval(this.state.mountID);
     this.setState({ loggingIn: false });
     auth.signOut()
       .then(() => {
@@ -357,6 +360,12 @@ class App extends PureComponent {
     }
   }
 
+  hideForm() {
+    if( this.state.makeHang ){
+      this.setState({ makeHang: false });
+    }
+  }
+
   toggleForm() {
     if( this.state.makeHang ){
       this.setState({ makeHang: false });
@@ -382,7 +391,6 @@ class App extends PureComponent {
             var key = Object.keys(snapshot.val())[0];
             this.setState({ userkey: key });
             Object.entries(user).map((u) => {
-              console.log(u);
               this.setState({
                 loggingIn: false,
                 username: u[1]['name'],
@@ -451,32 +459,11 @@ class App extends PureComponent {
 
       var now = new Date();
       var later = new Date();
-      var timelimit = later.setHours(now.getHours()-4)
+      var timelimit = later.setHours(now.getHours()-2)
+
+      var i = 1000;
 
       let id = setInterval(() => {
-        if(this.state.uid){
-          base.listenTo(`members`, {
-            context: this,
-            state: 'member',
-            asArray: true,
-            queries: {
-              orderByChild: 'uid',
-              equalTo: this.state.uid
-            },
-            then(data) {
-              if(data && data[0].points){
-                let tally = Object.values(data[0].points);
-                let points = 0;
-                if(tally.length > 0){
-                  tally.map((item) => {
-                    points = points + Object.values(item)[0];
-                  });
-                  this.setState({points});
-                }
-              }
-            }
-          });
-        }
         this.setState({ mountID: id });
         base.bindToState(`hangs`, {
           context: this,
@@ -496,7 +483,7 @@ class App extends PureComponent {
                   } else {
                     let geoQuery = geoHang.query({
                       center: location,
-                      radius: 40
+                      radius: 64
                     });
 
                     geoQuery.on("key_entered", function(key){
@@ -508,7 +495,8 @@ class App extends PureComponent {
             this.setState({ nearby, hangsReady: true, loggingIn: false });
           }
         });
-      }, 4000);
+        i = i + 1;
+      }, i);
   }
 
   componentDidUpdate() {
@@ -608,12 +596,31 @@ class App extends PureComponent {
         if(hang.hash === this.state.newitem){
           return (
             <Element name={'newItem'} className={'hang-item-new'} key={hang.key} ref={section => this.newItem = section} tabIndex="-1">
-              <HangItem new={true} key={hang.key} mapsize={'600x300'} onHangChange={this.onHangChange} openPopupBox={this.openPopupBox} hang={hang} user={this.state.user} token={this.state.token} />
+              <HangItem
+               new={true}
+               key={hang.key}
+               mapsize={'600x300'}
+               onHangChange={this.onHangChange}
+               openPopupBox={this.openPopupBox}
+               hang={hang}
+               user={this.state.user}
+               token={this.state.token}
+               geoReady={this.state.geoReady}
+              />
             </Element>
           )
         }else{
           return (
-            <HangItem key={hang.key} mapsize={'600x300'} onHangChange={this.onHangChange} openPopupBox={this.openPopupBox} hang={hang} user={this.state.user} token={this.state.token} />
+            <HangItem
+             key={hang.key}
+             mapsize={'600x300'}
+             onHangChange={this.onHangChange}
+             openPopupBox={this.openPopupBox}
+             hang={hang}
+             user={this.state.user}
+             token={this.state.token}
+             geoReady={this.state.geoReady}
+            />
           )
         }
       }
@@ -634,19 +641,29 @@ class App extends PureComponent {
             event={result}
             user={this.state.user}
             setMode={this.setMode}
+            geoReady={this.state.geoReady}
           />
         )
       });
     }
 
-    let NearHangs = this.state.hangs.map((hang) => {
+    let NearHangs = [];
+    NearHangs = this.state.hangs.map((hang) => {
       if( this.state.nearby.includes(hang.key) && hang.user !== 'Harvey Hang'){
         return (
-          <HangItem key={hang.key} mapsize={'600x300'} onHangChange={this.onHangChange} openPopupBox={this.openPopupBox} hang={hang} user={this.state.user} token={this.state.token} />
+          <HangItem
+           key={hang.key}
+           mapsize={'600x300'}
+           onHangChange={this.onHangChange}
+           openPopupBox={this.openPopupBox}
+           hang={hang}
+           user={this.state.user}
+           token={this.state.token}
+           geoReady={this.state.geoReady}
+          />
         )
       }
-      if( this.state.nearby.includes(hang.key) && hang.user === 'Harvey Hang'){
-        console.log(hang.user);
+      if( this.state.nearby.includes(hang.key) ){
         return (
           <OurItem
             key={hang.key}
@@ -657,10 +674,12 @@ class App extends PureComponent {
             user={this.state.user}
             token={this.state.token}
             setMode={this.setMode}
+            geoReady={this.state.geoReady}
           />
         )
       }
     });
+    NearHangs = NearHangs.filter(Boolean); //Don't send empty array of NearHangs
 
     let TodayHangs = this.state.hangs.map((hang) => {
         var date = new Date();
@@ -671,7 +690,16 @@ class App extends PureComponent {
         end = (end + utcOffset);
         if( timestamp < end  && hang.user !== 'Harvey Hang'){
             return (
-              <HangItem key={hang.key} mapsize={'600x300'} onHangChange={this.onHangChange} openPopupBox={this.openPopupBox} hang={hang} user={this.state.user} token={this.state.token}  />
+              <HangItem
+               key={hang.key}
+               mapsize={'600x300'}
+               onHangChange={this.onHangChange}
+               openPopupBox={this.openPopupBox}
+               hang={hang}
+               user={this.state.user}
+               token={this.state.token}
+               geoReady={this.state.geoReady}
+              />
             )
         }else{
           return (
@@ -719,7 +747,7 @@ class App extends PureComponent {
                 <div className='user-profile'>
                   <div className='user-profile-wrapper'>
                     <div className='user-profile-image'>
-                    <span className='user-points'>{this.state.points}</span>
+                    <HeaderPoints uid={this.state.uid} />
                     {this.state.user.photoURL ?
                     <img src={this.state.user.photoURL} alt={"Profile Picture for:"+this.state.user.displayName} />
                     : <img src={Gravatar.url(this.state.user.email, {s: '100', r: 'x', d: 'retro'}, true)} alt={"Profile Picture for:"+this.state.user.email} />}
@@ -746,7 +774,7 @@ class App extends PureComponent {
                 <div id="page-wrap" className="main">
                 <Route exact path="/" render={() =>
                   <div className={'container joyride-step-'+this.state.currentStep }>
-                        {this.state.username ?
+                        {this.state.hangsReady && this.state.username || this.state.user.displayName ?
                         <HangForm
                           clearSubmit={this.clearSubmit}
                           handleChange={this.handleChange}
@@ -773,7 +801,7 @@ class App extends PureComponent {
                           addTooltip={this.addTooltip}
                          />
                         : ''}
-                        {this.state.hangsReady && !this.state.username ?
+                        {this.state.hangsReady && !this.state.username && !this.state.user.displayName ?
                           <AddName
                             user={this.state.user}
                             setUserName={this.setUserName}
@@ -792,20 +820,22 @@ class App extends PureComponent {
                         : ''}
                         </span>
                         <section className='display-hang'>
-                          {this.state.hangs && this.state.hangsReady ?
+                          {this.state.hangs &&
+                            this.state.hangsReady &&
+                            this.state.geoReady ?
                             <div className='wrapper hangs'>
                               {this.state.mode === 'hangs' ? Hangs : ''}
-                              {this.state.mode === 'nearby' && this.state.geoReady ? NearHangs : ''}
+                              {this.state.mode === 'nearby' && NearHangs }
                               {this.state.mode === 'nearby' ? GhostHangs : ''}
                               {this.state.mode === 'today' ? TodayHangs : ''}
                               { clearInterval(this.state.mountID) }
                             </div>
                             : <div className="center page-spinner">
                             <i className="fa fa-circle-o-notch fa-spin"></i>
-                            </div>}
+                            </div> }
                           {this.state.visiblehangs === 0 &&
                             this.state.mode === 'hangs' &&
-                            this.state.usernew &&
+                            //this.state.usernew &&
                             this.state.hangsReady &&
                             !this.state.makeHang &&
                             !this.state.hangKey ?
@@ -825,7 +855,13 @@ class App extends PureComponent {
                           : ''}
                         </section>
                         <MuiThemeProvider>
-                          <BottomNav setMode={this.setMode} setSelectedIndex={this.setSelectedIndex} selectedIndex={this.state.selectedIndex} />
+                          <BottomNav
+                           hideForm={this.hideForm}
+                           setMode={this.setMode}
+                           setSelectedIndex={this.setSelectedIndex}
+                           selectedIndex={this.state.selectedIndex}
+                           toggleForm={this.toggleForm}
+                          />
                         </MuiThemeProvider>
                       </div> } />
                 <Route path="/checkin/:id" render={(props) =>
@@ -840,7 +876,7 @@ class App extends PureComponent {
                 } />
                 <Route path="/crew/:hash" render={(props) =>
                   <div className='container'>
-                    <Crew hash={props.match.params.hash} uid={this.state.uid} />
+                    <Crew hash={props.match.params.hash} uid={this.state.uid} userkey={this.state.userkey} />
                   </div>
                 } />
                 <Route path="/points/:hash" render={(props) =>
@@ -852,7 +888,16 @@ class App extends PureComponent {
                   <section className='display-hang'>
                   <div className='container'>
                     <Link className={'btn-back fa fa-angle-left'} to="/"></Link>
-                    <HangDetail user={this.state.user} userkey={this.state.userkey} username={this.state.user.displayName} userphoto={this.state.user.photoURL} token={this.state.token} hash={props.match.params.hash} openPopupBox={this.openPopupBox} />
+                    <HangDetail
+                     user={this.state.user}
+                     userkey={this.state.userkey}
+                     username={this.state.user.displayName}
+                     userphoto={this.state.user.photoURL}
+                     token={this.state.token}
+                     hash={props.match.params.hash}
+                     openPopupBox={this.openPopupBox}
+                     geoReady={this.state.geoReady}
+                    />
                   </div>
                   </section>
                 } />

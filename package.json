@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "bitap": "^1.0.1",
     "fb-react-sdk": "^1.0.4",
     "fetch-on-rest": "^2.0.4",
     "firebase-tools": "^6.0.1",
