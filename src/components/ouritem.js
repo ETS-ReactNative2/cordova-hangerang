@@ -3,13 +3,9 @@ import ReactDOM from 'react-dom';
 import firebase, {base} from './firebase.js';
 import GeoFire from 'geofire';
 import Hashids from 'hashids';
-import mmnt from 'moment';
 import Moment from 'react-moment';
-import revgeo from 'reverse-geocoding';
 import geolib from 'geolib';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
-
-import HangLink from './hanglink.js';
 
 var hashids = new Hashids('', 5);
 
@@ -140,7 +136,7 @@ class OurItem extends React.Component {
          const placeHangsRef = firebase.database().ref(`/places/${key}/hangs/`);
          Object.entries(place).map((p) => {
             placeHangsRef.push(this.state.hangKey);
-            return;
+            return console.log("p");
          });
          console.log('Place exists. Add new hang');
          return;
@@ -278,7 +274,7 @@ class OurItem extends React.Component {
               size={this.props.mapsize}
               center={this.props.hang.lat+','+this.props.hang.lng}
               zoom="18"
-              apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
+              apiKey="AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY"
             >
               <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
             </StaticGoogleMap>

@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigation';
 import Paper from 'material-ui/Paper';
 
-const recentsIcon = <i className="fa fa-clock-o"></i>;
+//const recentsIcon = <i className="fa fa-clock-o"></i>;
 const hangsIcon = <i className="fa fa-bolt"></i>;
 const nearbyIcon = <i className="fa fa-map-marker"></i>;
 let addIcon = <i className="fa fa-plus"></i>;
@@ -13,17 +13,13 @@ let addIcon = <i className="fa fa-plus"></i>;
  * state (for instance, by the URL).
  */
 class BottomNav extends Component {
-  constructor() {
-    super();
-  }
-
   select(e) {
     var mode = {
       0: "nearby",
       1: "add",
       2: "hangs",
     };
-    if( mode[e] == "add" ){
+    if( mode[e] === "add" ){
       this.props.toggleForm();
       this.props.setSelectedIndex( e );
     }else{
@@ -43,7 +39,7 @@ class BottomNav extends Component {
             onClick={() => this.select(0) }
           />
           <BottomNavigationItem
-            label="Add"
+            label="Create"
             icon={addIcon}
             onClick={() => this.select(1) }
           />

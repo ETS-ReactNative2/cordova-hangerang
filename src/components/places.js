@@ -3,7 +3,7 @@ import ReactGoogleMapLoader from "react-google-maps-loader";
 import ReactGooglePlacesSuggest from "react-google-places-suggest";
 import TextField from 'material-ui/TextField';
 
-const MY_API_KEY = "AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA";
+const MY_API_KEY = "AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY";
 
 class GoogleSuggest extends React.Component {
   state = {

@@ -1,6 +1,7 @@
 import React from "react";
 import firebase from './firebase.js';
 import Moment from 'react-moment';
+import HangLink from './hanglink.js';
 
 var hangHeader = {
   position: "relative",
@@ -86,19 +87,26 @@ class HangMini extends React.Component {
 
   render() {
 
+    var hangLink = '/hang/'+this.state.hang.hash;
+
     if(this.state.hang){
 
     let Hang =
       <span>
+        <HangLink to={hangLink} text={
         <span ref="detail">
         <table width="100%" style={hangHeader} className={'hang-header'}>
           <tbody>
           <tr>
             <td>
               <h2 style={hangHeaderTitle}>{this.state.hang.title}</h2>
-              <span className="hang-placetime">
+              <div className="hang-placetime">
                 <Moment format="hh:mm a" className="hang-time">{this.state.hang.datetime}</Moment> @ {this.state.hang.placename}
-              </span>
+              </div>
+              <hr />
+              <div className="small">
+              <b>Host:</b> {this.state.hang.user}
+              </div>
             </td>
             <td>
               <table style={hangDate}>
@@ -125,16 +133,7 @@ class HangMini extends React.Component {
           </tbody>
         </table>
         </span>
-        <span className="hang-info">
-          <span className="hang-member">
-            <img src={this.state.hang.userphoto} alt={this.state.hang.user} className="hang-host" />
-            <span>
-            <b>Host</b><br />
-            { this.state.hang.fbid ? <a href={'https://www.facebook.com/'+this.state.hang.fbid} target="_blank">{this.state.hang.user}</a>
-            : <span>{this.state.hang.user}</span> }
-            </span>
-          </span>
-        </span>
+        } />
       </span>;
 
     let HangMini = <div className={'hang-item show'} key={this.state.hang.key}>{Hang}</div>;

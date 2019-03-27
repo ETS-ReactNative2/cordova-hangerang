@@ -1,7 +1,7 @@
 import React from "react";
 import { Places } from 'google-places-web';
 
-Places.apiKey = 'AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA';
+Places.apiKey = 'AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY';
 Places.debug = false;
 
 class GooglePlaceNameRev extends React.Component {

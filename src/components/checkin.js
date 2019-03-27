@@ -49,10 +49,14 @@ class CheckIn extends React.Component {
           result: data
         })
       }
-      if(data && data.includes("goo.gl") || data && data.includes("checkin")){
+      if(data && data.includes("goo.gl")){
         this.setState({
           validURL: true
         })
+      }else if(data && data.includes("checkin")){
+        this.setState({
+          validURL: true
+        })        
       }
     }
     handleError(err){

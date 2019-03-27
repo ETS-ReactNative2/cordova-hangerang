@@ -3,7 +3,7 @@ import Async from 'react-promise';
 import firebase from './firebase.js';
 import GeoFire from 'geofire';
 import mmnt from 'moment';
-import revgeo from 'reverse-geocoding';
+import geocoding from 'reverse-geocoding-google';
 import {geolocated} from 'react-geolocated';
 import Client from 'predicthq';
 
@@ -54,7 +54,9 @@ class Geolocation extends React.Component {
         geoUser.set(key, [lat, lng]).then(() => {
             this.props.setGeoLocation({ geoReady: true, lat, lng });
             //this.getEventful(lat, lng);
-            var client = new Client({access_token: "GHL45LeU1QhCh7bzT8BiC0hwZ3z8xT"});
+            //kMliRxAqc49wNf6jmtxJLRBYAqW2Tr
+            //GHL45LeU1QhCh7bzT8BiC0hwZ3z8xT
+            var client = new Client({access_token: "kMliRxAqc49wNf6jmtxJLRBYAqW2Tr"});
             let m = mmnt();
             client.events.search({
               'limit': 25,
@@ -79,31 +81,34 @@ class Geolocation extends React.Component {
     });
 
     var geocode = {
-        'latitude': lat,
-        'longitude': lng
+    'latitude': lat,
+    'longitude': lng,
+    'key': 'AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY'
     };
 
-    var location = async () => {
-    return new Promise((resolve, reject) => {
-      revgeo.location(geocode, (err, result) => {
-          if(err){
-            console.log(err);
-            reject(err);
-          }else{
-            let address = result.results[4].formatted_address;
-            if(this.props.address !== address){
-              this.props.setAddress(address);
-              resolve(address);
+    if(lat && lng && geocode){
+      var location = async () => {
+      return new Promise((resolve, reject) => {
+        geocoding.location(geocode, (err, result) => {
+            if(err){
+              console.log(err);
+              reject(err);
+              return;
+            }else{
+              let address = result.results[4].formatted_address;
+              if(this.props.address !== address){
+                this.props.setAddress(address);
+                resolve(address);
+              }
+              resolve();
+              return;
             }
-            resolve();
-            return;
-          }
-          return;
+          });
         });
-      });
-    };
+      };
 
-    return location();
+      return location();
+    }
   }
 
   render() {

@@ -107,6 +107,7 @@ class HangItem extends React.Component {
 
   placeCallback = (results, status) => {
     if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+      console.log(results);
       if(results[1]){
         if(results[1].photos && results[1].photos.length > 0){
           var placePhotoUrl = results[1].photos[0].getUrl({maxWidth:640});
@@ -119,30 +120,59 @@ class HangItem extends React.Component {
   }
 
   getPlace = (lat,lng) => {
-    let maploc = new window.google.maps.LatLng(lat,lng);
-    let mapdom = ReactDOM.findDOMNode(this.refs.map);
+    if(lat && lng){
+      let maploc = new window.google.maps.LatLng(lat,lng);
+      let mapdom = ReactDOM.findDOMNode(this.refs.map);
 
-    let map = new window.google.maps.Map(mapdom, {
-        center: maploc,
-        zoom: 15
-      });
+      if(mapdom){
+        let map = new window.google.maps.Map(mapdom, {
+            center: maploc,
+            zoom: 15
+          });
 
-    let request = {
-      location: maploc,
-      radius: '1'
-    };
+        let request = {
+          location: maploc,
+          radius: '1'
+        };
 
-    let service = new window.google.maps.places.PlacesService(map);
-    service.nearbySearch(request, this.placeCallback);
+        let service = new window.google.maps.places.PlacesService(map);
+        service.nearbySearch(request, this.placeCallback);
+      }
+    }
   }
 
   joinHang(hang, user, uid) {
+    //Add Member to Hang
     const member = {
-      fbid: this.props.user.providerData[0].uid,
       uid: this.props.user.uid,
       user: this.props.user.displayName,
       userphoto: this.props.user.photoURL,
     }
+    const userRef = firebase.database().ref(`/members/`);
+    userRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
+      if (snapshot.exists()) {
+        var user = snapshot.val();
+        let key = Object.keys(user)[0];
+        const userHangRef = firebase.database().ref(`/members/${key}/hangs`);
+        userHangRef.orderByChild("hang").equalTo(key).once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            console.log('Already joined this hang');
+          }else{
+            userHangRef.push({hang});
+            console.log('Hang Added To User!');
+            const invitedRef = firebase.database().ref(`/members/${key}/invite`);
+            invitedRef.orderByChild("hangid").equalTo(hang).once('value',
+            (snapshot) => {
+              if (snapshot.exists()) {
+                let invkey = Object.keys(snapshot.val())[0];
+                invitedRef.ref.child(invkey).remove();
+              }
+            });
+            return;
+          }
+        });
+      }
+    });
     const crewRef = firebase.database().ref(`/hangs/${hang}/crew/`);
     crewRef.orderByChild("uid").equalTo(uid).once('value', function(snapshot){
       if (snapshot.exists()) {
@@ -159,7 +189,6 @@ class HangItem extends React.Component {
         const usersRef = firebase.database().ref(`/members/`);
         usersRef.orderByChild("uid").equalTo(hang['uid']).once('value', (snapshot) => {
           var key = Object.keys(snapshot.val())[0];
-          console.log(key);
           const crewRef = firebase.database().ref(`/members/${key}/crew/`);
           crewRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
             if (snapshot.exists()) {
@@ -203,10 +232,6 @@ class HangItem extends React.Component {
        this.setState({ hang: newhang });
      });
     this.inHang(hangid);
-  }
-
-  handleLink(id) {
-    this.props.history.push('/hangs/'+id);
   }
 
   handleShareButton(url) {
@@ -368,16 +393,23 @@ class HangItem extends React.Component {
       });
     });
 
-    if( this.props.hang.uid === this.props.user.uid || this.props.hang.visibility === 'public' || this.state.inhang || this.props.detail ){
+    if( this.props.hang.uid === this.props.user.uid ||
+        this.props.hang.visibility === 'public' ||
+        this.state.inhang ||
+        this.props.detail ||
+        this.props.invited
+      ){
       this.setState({ visibility: 'show' })
     }
 
     if(this.props.detail){
       setTimeout(this.renderHangItem, 500);
-      setTimeout(this.saveImg, 1000);
+      //setTimeout(this.saveImg, 1000);
     }
 
-    if(this.props.geoReady){
+    if(this.props.geoReady
+      && this.props.hang.lat
+      && this.props.hang.lng){
       this.getPlace(this.props.hang.lat,this.props.hang.lng);
       let distance = geolib.getDistance(
         {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
@@ -468,7 +500,7 @@ class HangItem extends React.Component {
               size={this.props.mapsize}
               center={this.props.hang.lat+','+this.props.hang.lng}
               zoom="18"
-              apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
+              apiKey="AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY"
             >
               <Marker location={this.props.hang.lat+','+this.props.hang.lng} color="0xff0000" />
             </StaticGoogleMap>
@@ -516,7 +548,7 @@ class HangItem extends React.Component {
               <i className="fa fa-trash" onClick={() => this.removeHang(this.state.key)}><span>Remove Hang</span></i>
               : ''}
               { this.props.hang.uid !== this.props.user.uid && this.state.inhang === false ?
-              <button className="hang-join" onClick={() => this.joinHang(this.state.key, this.props.user.displayName, this.props.user.uid)}>Join</button>
+              <button className="hang-join" onClick={() => this.joinHang(this.state.key, this.props.user.displayName, this.props.user.uid)}>Go</button>
               : ''}
             </span>
           }
@@ -540,9 +572,13 @@ class HangItem extends React.Component {
       return HangItem;
     }else if(this.props.hang.visibility === 'invite' && this.state.inhang ){
       return HangItem;
+    }else if(this.props.hang.visibility === 'groups' && this.state.inhang ){
+      return HangItem;
     }else if(this.props.hang.visibility === 'public'){
       return HangItem;
     }else if(this.props.detail){
+      return HangItem;
+    }else if(this.props.invited){
       return HangItem;
     }else{
       return <div className="hang-item hide"></div>;

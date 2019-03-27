@@ -1,5 +1,6 @@
 import React from "react";
 import firebase from './firebase.js';
+import {Redirect} from 'react-router-dom';
 
 class Points extends React.Component {
   constructor(props) {
@@ -26,13 +27,17 @@ class Points extends React.Component {
     }
 
     render() {
+        if (!this.props.uid || this.props.uid === '' || this.props.uid === null) {
+           return <Redirect to='/' />
+        }
+
         let points = this.state.points;
         let total = 0;
         let Points = Object.entries(points).map((p,i) => {
           let points = p[1];
           let desc = Object.keys(points);
           let value = Object.values(points);
-          total = parseInt(total) + parseInt(value);
+          total = parseInt(total, 10) + parseInt(value, 10);
           return (
           <tr key={`member-points-${i}`}>
             <td className="small member-points-desc">

@@ -3,7 +3,6 @@ import Async from 'react-promise';
 import firebase from './firebase.js';
 import GeoFire from 'geofire';
 import geolib from 'geolib';
-import revgeo from 'reverse-geocoding';
 import { geolocated } from 'react-geolocated';
 
 import { getPoints } from '../helpers/points.js';

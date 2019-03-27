@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 //import PropTypes from 'prop-types';
 
 import logo from './assets/logo.png';
-import unknown from './assets/unknown-person.jpg';
 import './assets/App.css';
 
 import firebase, { auth, fbauth, ggauth, twauth, base } from './components/firebase.js';
@@ -20,23 +19,32 @@ import Gravatar from 'gravatar';
 import Hashids from 'hashids';
 import Joyride from 'react-joyride';
 import { push as Menu } from 'react-burger-menu';
+import slugify from 'slugify';
 
 import AddName from './components/addname.js';
+import AddPhone from './components/addphone.js';
 import BottomNav from './components/bottomnav.js';
 import CheckIn from './components/checkin.js';
 import Crawl from './components/crawl.js';
 import Crew from './components/crew.js';
 import Geolocation from './components/geolocation.js';
 import GhostItem from './components/ghostitem.js';
+import Groups from './components/groups.js';
+import GroupsAdd from './components/groupsadd.js';
+import GroupsEdit from './components/groupsedit.js';
+import GroupsView from './components/groupsview.js';
 import HangItem from './components/hangitem.js';
 import HangDetail from './components/hangdetail.js';
 import HangForm from './components/hangform.js';
 import HeaderPoints from './components/headerpoints.js';
 import Home from './components/home.js';
+import Invites from './components/invites.js';
+import Logout from './components/logout.js';
 import OurItem from './components/ouritem.js';
 import Points from './components/points.js';
 import Place from './components/place.js';
 import Privacy from './components/privacy.js';
+import Profile from './components/profile.js';
 //import Scan from './components/scan.js';
 import TermsConditions from './components/terms.js';
 
@@ -74,6 +82,7 @@ class App extends PureComponent {
       address: '',
       name: '',
       token: '',
+      invites: '',
       //hangs
       hangs: [],
       nearby: [],
@@ -99,7 +108,7 @@ class App extends PureComponent {
       value: '',
       copied: false,
       getLocation: false,
-      visibility: 'invite',
+      visibility: 'groups',
       //joyride
       currentStep: 0,
       joyrideOverlay: true,
@@ -133,6 +142,7 @@ class App extends PureComponent {
   }
 
   setDate = (datetime) => this.setState({ datetime });
+  setInvitedGroup = (group) => this.setState({ group });
   setAddress = (address) => this.setState({ address });
   setLocation = (suggest) => this.setState({ location: suggest });
   setName = (original) => this.setState({ name: original });
@@ -181,8 +191,10 @@ class App extends PureComponent {
       placename: this.state.name,
       visibility: this.state.visibility
     }
+
     hangsRef.push(hang).then((snap) => {
      let key = snap.key;
+     this.setState({newhangkey: key});
      let geoLocationRef = firebase.database().ref('hangs-gl');
      let geoFire = new GeoFire(geoLocationRef);
      geoFire.set(key, [hang.lat, hang.lng]).then(function() {
@@ -207,6 +219,31 @@ class App extends PureComponent {
      pid: this.state.location.place_id,
      name: this.state.name,
    }
+
+   const groupRef = firebase.database().ref(`/groups/${this.state.group}`);
+   groupRef.once('value', (snapshot) => {
+     if (snapshot.exists()) {
+       var group = snapshot.val();
+       Object.entries(group.members).map((user) => {
+         console.log(user);
+         if(user[1].status === 'joined'){
+           const usersRef = firebase.database().ref('members');
+           usersRef.orderByChild("uid").equalTo(user[1].uid).once('value', (snapshot) => {
+             if (snapshot.exists()) {
+               var user = snapshot.val();
+               let userkey = Object.keys(user)[0];
+               const memberInviteRef = firebase.database().ref(`/members/${userkey}/invite`);
+               memberInviteRef.push({type: 'hang', hangid: this.state.newhangkey});
+               console.log('Hang Invite added!');
+               return;
+             }
+           });
+         }
+         return console.log("user");
+       });
+     }
+   });
+
    const placeRef = firebase.database().ref('places');
    placeRef.orderByChild("pid").equalTo(this.state.location.place_id).once('value', (snapshot) => {
        if (snapshot.exists()) {
@@ -215,7 +252,7 @@ class App extends PureComponent {
          const placeHangsRef = firebase.database().ref(`/places/${key}/hangs/`);
          Object.entries(place).map((p) => {
             placeHangsRef.push(this.state.hangKey);
-            return;
+            return console.log("p");
          });
          console.log('Place exists. Add new hang');
          return;
@@ -252,7 +289,7 @@ class App extends PureComponent {
         this.setState({ user: null });
         localStorage.removeItem('hideLogin');
         this.setState({ loggingIn: false });
-        window.location.reload();
+        window.location.replace('/');
       });
   }
 
@@ -377,37 +414,52 @@ class App extends PureComponent {
     }
   }
 
-  //component cycle
-
-  componentWillMount() {
-    auth.onAuthStateChanged((user) => {
-      console.log('auth state changed');
-      if (user) {
-        this.setState({ user, loggingIn: true });
-        const usersRef = firebase.database().ref('members');
-        usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
-          if (snapshot.exists()) {
-            var user = snapshot.val();
-            var key = Object.keys(snapshot.val())[0];
-            this.setState({ userkey: key });
-            Object.entries(user).map((u) => {
-              this.setState({
-                loggingIn: false,
-                username: u[1]['name'],
-                userphoto: u[1]['userphoto'],
-                fbid: u[1]['fbid'],
-                token: u[1]['token'],
-                uid: u[1]['uid']
-              });
-              return u[1]['token'];
-            });
+  setUserState(user){
+    this.setState({ user, loggingIn: true });
+    const usersRef = firebase.database().ref('members');
+    usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
+      if (snapshot.exists()) {
+        var user = snapshot.val();
+        var key = Object.keys(snapshot.val())[0];
+        base.listenTo(`/members/${key}/invite`, {
+          context: this,
+          then(invites){
+            this.setState(prevState => ({
+              invites: invites,
+            }));
           }
+        });
+        Object.entries(user).map((u) => {
+          this.setState({
+            loggingIn: false,
+            username: u[1]['name'],
+            userphoto: u[1]['userphoto'],
+            fbid: u[1]['fbid'],
+            token: u[1]['token'],
+            uid: u[1]['uid']
+          });
+          return u[1]['token'];
         });
       }
     });
   }
 
+  //component cycle
+
+  componentWillMount() {
+    auth.onAuthStateChanged((user) => {
+      console.log('auth state changed');
+      this.setUserState(user);
+    });
+  }
+
   componentDidMount = () => {
+    let path = window.location.pathname;
+    if(path.includes('/group/invite/')){
+      let banana = path.split('/');
+      let id = banana[4];
+      localStorage.setItem('hngrng-grp-vite', id);
+    }
     auth.getRedirectResult().then((result) => {
         if(!result.user){
           //do nothing
@@ -428,15 +480,32 @@ class App extends PureComponent {
                 userphoto: result.user.photoURL,
                 uid: result.user.uid,
                 points:[ points ]
+              }).then((snap) => {
+                 const key = snap.key;
+                 console.log('user created in database');
+                 let grphash = localStorage.getItem('hngrng-grp-vite');
+                 if(grphash){
+                   const groupRef = firebase.database().ref(`/groups/`);
+                   groupRef.orderByChild("hash").equalTo(grphash).once('value',
+                     (snapshot) => {
+                     if (snapshot.exists()) {
+                       let id = Object.keys(snapshot.val())[0];
+                       const groupMembersRef = firebase.database().ref(`/groups/${id}/members`);
+                       groupMembersRef.ref.push({
+                         label: result.user.displayName,
+                         status: 'invited',
+                         user: result.user.displayName,
+                         uid: result.user.uid,
+                         userphoto: result.user.photoURL,
+                         value: slugify(result.user.displayName),
+                       });
+                       const memberInviteRef = firebase.database().ref(`/members/${key}/invite`);
+                       memberInviteRef.push({type: 'group', groupid: id});
+                     }
+                   });
+                 }
+                 this.setUserState(result.user);
               });
-              console.log('user created in database');
-              // setTimeout(() => {
-              //   this.setState({
-              //     isReady: true,
-              //     isRunning: true,
-              //   });
-              //   this.toggleForm();
-              // }, 3000);
               return;
             }
           });
@@ -459,44 +528,38 @@ class App extends PureComponent {
 
       var now = new Date();
       var later = new Date();
-      var timelimit = later.setHours(now.getHours()-2)
+      var timelimit = later.setHours(now.getHours()-2);
 
-      var i = 1000;
+      base.bindToState(`hangs`, {
+        context: this,
+        state: 'hangs',
+        asArray: true,
+        keepKeys: true,
+        queries: {
+          orderByChild: 'timestamp',
+          startAt: timelimit
+        },
+        then() {
+          const nearby = [];
+          if(this.state.userkey && this.state.hangs){
+            geoUser.get(this.state.userkey).then(function(location) {
+                if (location === null) {
+                    console.log("Provided key is not in GeoFire");
+                } else {
+                  let geoQuery = geoHang.query({
+                    center: location,
+                    radius: 64
+                  });
 
-      let id = setInterval(() => {
-        this.setState({ mountID: id });
-        base.bindToState(`hangs`, {
-          context: this,
-          state: 'hangs',
-          asArray: true,
-          keepKeys: true,
-          queries: {
-            orderByChild: 'timestamp',
-            startAt: timelimit
-          },
-          then() {
-            const nearby = [];
-            if(this.state.userkey && this.state.hangs){
-              geoUser.get(this.state.userkey).then(function(location) {
-                  if (location === null) {
-                      console.log("Provided key is not in GeoFire");
-                  } else {
-                    let geoQuery = geoHang.query({
-                      center: location,
-                      radius: 64
-                    });
-
-                    geoQuery.on("key_entered", function(key){
-                      nearby.push(key);
-                    });
-                  }
-              });
-            }
-            this.setState({ nearby, hangsReady: true, loggingIn: false });
+                  geoQuery.on("key_entered", function(key){
+                    nearby.push(key);
+                  });
+                }
+            });
           }
-        });
-        i = i + 1;
-      }, i);
+          this.setState({ nearby, hangsReady: true, loggingIn: false });
+        }
+      });
   }
 
   componentDidUpdate() {
@@ -592,7 +655,7 @@ class App extends PureComponent {
     let headerClass = this.state.user ? null : 'hide';
 
     let Hangs = this.state.hangs.map((hang) => {
-      if(hang.user !== 'Harvey Hang' || this.state.user && hang.user === this.state.user.displayName){
+      //if(hang.user !== 'Harvey Hang' || this.state.user && hang.user === this.state.user.displayName){
         if(hang.hash === this.state.newitem){
           return (
             <Element name={'newItem'} className={'hang-item-new'} key={hang.key} ref={section => this.newItem = section} tabIndex="-1">
@@ -623,12 +686,11 @@ class App extends PureComponent {
             />
           )
         }
-      }
+      //}
     });
 
     let GhostHangs = '';
     if (!this.state.nearevents) {
-      console.log();
       GhostHangs = (() => {
         return ( <i className="fa fa-circle-o-notch fa-spin"></i> )
       });
@@ -678,6 +740,7 @@ class App extends PureComponent {
           />
         )
       }
+      return console.log("hang");
     });
     NearHangs = NearHangs.filter(Boolean); //Don't send empty array of NearHangs
 
@@ -709,6 +772,7 @@ class App extends PureComponent {
     });
 
     return (
+      <Router>
       <div ref={this.dashboard} className='dashboard'>
         { isReady ?
           <Joyride
@@ -739,18 +803,22 @@ class App extends PureComponent {
           <div>
           <header className={headerClass}>
             <div className="wrapper">
-              <div className="brand">
-              <a href="/"><img src={logo} alt="Hangerang" /></a>
-              <h1>Hangerang</h1>
-              </div>
+              <Route render={({history}) => (
+                <a className="brand" onClick={() => {history.push('/')}}>
+                  <img src={logo} alt="Hangerang" />
+                  <h1>Hangerang</h1>
+                </a>
+              )}/>
                 {this.state.user ?
                 <div className='user-profile'>
                   <div className='user-profile-wrapper'>
                     <div className='user-profile-image'>
                     <HeaderPoints uid={this.state.uid} />
+                    <Link id="crew" className="menu-item" to={`/profile/${this.state.uid}`}>
                     {this.state.user.photoURL ?
                     <img src={this.state.user.photoURL} alt={"Profile Picture for:"+this.state.user.displayName} />
                     : <img src={Gravatar.url(this.state.user.email, {s: '100', r: 'x', d: 'retro'}, true)} alt={"Profile Picture for:"+this.state.user.email} />}
+                    </Link>
                     </div>
                     <h4>{this.state.username ? this.state.username : this.state.user.email}</h4>
                   </div>
@@ -760,21 +828,31 @@ class App extends PureComponent {
           </header>
         </div>
         {this.state.isLive && this.state.user ?
-          <Router>
               <div>
+                {this.state.invites && Object.entries(this.state.invites).length > 0 &&
+                  <Route render={({history}) => (
+                    <div
+                      className='user-invites'
+                      onClick={() => { history.push('/invites') }}
+                    >
+                      {Object.entries(this.state.invites).length}
+                    </div>
+                  )}/>
+                }
                 <Menu right pageWrapId={ "page-wrap" } outerContainerId={ "root" } isOpen={this.state.menuOpen}
           onStateChange={(state) => this.handleStateChange(state)}>
                   <Link id="hangs" className="menu-item" to="/" onClick={() => this.closeMenu()}>Home</Link>
+                  <Link id="checkin" className="menu-item" to="/checkin/scan" onClick={() => this.closeMenu()}>Check In</Link>
                   <Link id="points" className="menu-item" to={`/points/total`} onClick={() => this.closeMenu()}>Points</Link>
                   <Link id="crew" className="menu-item" to={`/crew/all`} onClick={() => this.closeMenu()}>Crew</Link>
-                  <Link id="checkin" className="menu-item" to="/checkin/scan" onClick={() => this.closeMenu()}>Check In</Link>
+                  <Link id="groups" className="menu-item" to={`/groups`} onClick={() => this.closeMenu()}>Groups</Link>
                   {/*<Link id="crawl" className="menu-item" to={`/crawl/${this.state.uid}`} onClick={() => this.closeMenu()}>Coffee Crawl</Link>*/}
                   <a id="logout" className="menu-item" onClick={this.logout}>Log Out</a>
                 </Menu>
                 <div id="page-wrap" className="main">
                 <Route exact path="/" render={() =>
                   <div className={'container joyride-step-'+this.state.currentStep }>
-                        {this.state.hangsReady && this.state.username || this.state.user.displayName ?
+                        {this.state.hangsReady && this.state.username ?
                         <HangForm
                           clearSubmit={this.clearSubmit}
                           handleChange={this.handleChange}
@@ -782,6 +860,7 @@ class App extends PureComponent {
                           makeHang={this.state.makeHang}
                           setHangVisibility={this.setHangVisibility}
                           setDate={this.setDate}
+                          setInvitedGroup={this.setInvitedGroup}
                           setLocation={this.setLocation}
                           setName={this.setName}
                           setSubmit={this.setSubmit}
@@ -808,7 +887,7 @@ class App extends PureComponent {
                           />
                         : ''}
                         <span>
-                        { this.state.mode === 'nearby' && this.state.isLive ?
+                        {this.state.mode === 'nearby' && this.state.isLive ?
                         <Geolocation
                           getlocale={this.getLocale}
                           user={this.state.user}
@@ -824,10 +903,10 @@ class App extends PureComponent {
                             this.state.hangsReady &&
                             this.state.geoReady ?
                             <div className='wrapper hangs'>
-                              {this.state.mode === 'hangs' ? Hangs : ''}
+                              {this.state.mode === 'hangs' && Hangs }
                               {this.state.mode === 'nearby' && NearHangs }
-                              {this.state.mode === 'nearby' ? GhostHangs : ''}
-                              {this.state.mode === 'today' ? TodayHangs : ''}
+                              {this.state.mode === 'nearby' && GhostHangs }
+                              {this.state.mode === 'today' && TodayHangs }
                               { clearInterval(this.state.mountID) }
                             </div>
                             : <div className="center page-spinner">
@@ -864,64 +943,105 @@ class App extends PureComponent {
                           />
                         </MuiThemeProvider>
                       </div> } />
-                <Route path="/checkin/:id" render={(props) =>
-                  <div className='container'>
-                    <CheckIn id={props.match.params.id} user={this.state.user} uid={this.state.uid} />
+              <Route path="/addphone/:uid" render={(props) =>
+                <div className='container'>
+                  <AddPhone uid={props.match.params.uid} />
+                </div>
+              } />
+              <Route path="/checkin/:id" render={(props) =>
+                <div className='container'>
+                  <CheckIn id={props.match.params.id} user={this.state.user} uid={this.state.uid} />
+                </div>
+              } />
+              <Route path="/crawl/:uid" render={(props) =>
+                <div className='container'>
+                  <Crawl uid={props.match.params.uid} />
+                </div>
+              } />
+              <Route path="/crew/:hash" render={(props) =>
+                <div className='container'>
+                  <Crew hash={props.match.params.hash} uid={this.state.uid} userkey={this.state.userkey} />
+                </div>
+              } />
+              <Route path="/invites" render={(props) =>
+                    <div className='container invites'>
+                      <Invites invites={this.state.invites} user={this.state.user} />
+                    </div>
+                  } />
+              <Route path="/groups" render={(props) =>
+                  <div className='container groups'>
+                    <Groups hash={props.match.params.hash} uid={this.state.uid} userkey={this.state.userkey} />
                   </div>
-                } />
-                <Route path="/crawl/:uid" render={(props) =>
-                  <div className='container'>
-                    <Crawl uid={props.match.params.uid} />
-                  </div>
-                } />
-                <Route path="/crew/:hash" render={(props) =>
-                  <div className='container'>
-                    <Crew hash={props.match.params.hash} uid={this.state.uid} userkey={this.state.userkey} />
-                  </div>
-                } />
-                <Route path="/points/:hash" render={(props) =>
-                  <div className='container'>
-                    <Points hash={props.match.params.hash} uid={this.state.uid} />
-                  </div>
-                } />
-                <Route path="/hang/:hash" render={(props) =>
-                  <section className='display-hang'>
-                  <div className='container'>
-                    <Link className={'btn-back fa fa-angle-left'} to="/"></Link>
-                    <HangDetail
-                     user={this.state.user}
-                     userkey={this.state.userkey}
-                     username={this.state.user.displayName}
-                     userphoto={this.state.user.photoURL}
-                     token={this.state.token}
-                     hash={props.match.params.hash}
-                     openPopupBox={this.openPopupBox}
-                     geoReady={this.state.geoReady}
+              } />
+              <Route exact path="/group/invite/:name/:hash/:invite?" render={(props) =>
+                  <div className='container group-view-invite'>
+                    <GroupsView
+                      name={props.match.params.name}
+                      hash={props.match.params.hash}
+                      invite={props.match.params.invite}
+                      user={this.state.user}
+                      openPopupBox={this.openPopupBox}
                     />
                   </div>
-                  </section>
-                } />
-                <Route path="/place/:id" render={(props) =>
-                  <div className='container'>
-                    <Place id={props.match.params.id} />
+              } />
+              <Route exact path="/group/view/:id" render={(props) =>
+                <div className='container group-view-id'>
+                  <GroupsView id={props.match.params.id} />
+                </div>
+              } />
+              <Route exact path="/group/edit/:id" render={(props) =>
+                  <div className='container group-edit'>
+                    <GroupsEdit id={props.match.params.id} uid={this.state.uid} />
                   </div>
-                } />
-                <Route exact path="/pages/privacy-policy" render={(props) =>
+              } />
+              <Route path="/group/add" render={(props) =>
+                <div className='container group-add'>
+                  <GroupsAdd
+                   hash={props.match.params.hash}
+                   uid={this.state.uid}
+                   userkey={this.state.userkey}
+                   username={this.state.username}
+                   userphoto={this.state.userphoto}
+                  />
+                </div>
+              } />
+              <Route path="/logout/" render={(props) =>
                   <div className='container'>
-                    <Privacy />
+                    <Logout logout={this.logout} />
                   </div>
-                } />
-                <Route exact path="/pages/terms-conditions" render={(props) =>
-                  <div className='container'>
-                    <TermsConditions />
-                  </div>
-                } />
-              </div>
-            </div>
-          </Router>
-        :
-          <Router>
-            <div>
+              } />
+              <Route path="/points/:hash" render={(props) =>
+                <div className='container'>
+                  <Points hash={props.match.params.hash} uid={this.state.uid} />
+                </div>
+              } />
+              <Route path="/hang/:hash" render={(props) =>
+                <section className='display-hang'>
+                <div className='container'>
+                  <Link className={'btn-back fa fa-angle-left'} to="/"></Link>
+                  <HangDetail
+                   user={this.state.user}
+                   userkey={this.state.userkey}
+                   username={this.state.user.displayName}
+                   userphoto={this.state.user.photoURL}
+                   token={this.state.token}
+                   hash={props.match.params.hash}
+                   openPopupBox={this.openPopupBox}
+                   geoReady={this.state.geoReady}
+                  />
+                </div>
+                </section>
+              } />
+              <Route path="/place/:id" render={(props) =>
+                <div className='container'>
+                  <Place id={props.match.params.id} />
+                </div>
+              } />
+              <Route path="/profile/:uid" render={(props) =>
+                <div className='container'>
+                  <Profile uid={props.match.params.uid} />
+                </div>
+              } />
               <Route exact path="/pages/privacy-policy" render={(props) =>
                 <div className='container'>
                   <Privacy />
@@ -932,26 +1052,54 @@ class App extends PureComponent {
                   <TermsConditions />
                 </div>
               } />
-              <Route exact path="/*" render={(props) =>
-              <Home
-                fbLogin={this.fbLogin}
-                ggLogin={this.ggLogin}
-                twLogin={this.twLogin}
-                toggleLogin={this.toggleLogin}
-                toggleReg={this.toggleReg}
-                login={this.state.login}
-                register={this.state.register}
-                isLive={this.state.isLive}
-                hideLogin={localStorage.getItem('hideLogin')}
-                loggingIn={this.state.loggingIn}
-                setUserName={this.setUserName}
-                logout={this.logout}
-              />
+              </div>
+            </div>
+        :
+            <div>
+              <Route path="/group/invite/:name/:hash/:invite?" render={(props) =>
+                <div className='container'>
+                  <GroupsView
+                    name={props.match.params.name}
+                    hash={props.match.params.hash}
+                    invite={props.match.params.invite}
+                  />
+                </div>
+              } />
+              <Route exact path="/pages/privacy-policy" render={(props) =>
+                <div className='container'>
+                  <Privacy />
+                </div>
+              } />
+              <Route exact path="/pages/terms-conditions" render={(props) =>
+                <div className='container'>
+                  <TermsConditions />
+                </div>
+              } />
+              <Route path="/logout/" render={(props) =>
+                  <div className='container'>
+                    <Logout logout={this.logout} />
+                  </div>
+              } />
+              <Route exact path="/" render={(props) =>
+                <Home
+                  fbLogin={this.fbLogin}
+                  ggLogin={this.ggLogin}
+                  twLogin={this.twLogin}
+                  toggleLogin={this.toggleLogin}
+                  toggleReg={this.toggleReg}
+                  login={this.state.login}
+                  register={this.state.register}
+                  isLive={this.state.isLive}
+                  hideLogin={localStorage.getItem('hideLogin')}
+                  loggingIn={this.state.loggingIn}
+                  setUserName={this.setUserName}
+                  logout={this.logout}
+                />
               } />
             </div>
-          </Router>
         }
         </div>
+        </Router>
     );
   }
 }

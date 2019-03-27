@@ -4,7 +4,7 @@ import firebase from './firebase.js';
 import GeoFire from 'geofire';
 import Hashids from 'hashids';
 import Moment from 'react-moment';
-import revgeo from 'reverse-geocoding';
+import geocoding from 'reverse-geocoding-google';
 import geolib from 'geolib';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
 
@@ -80,6 +80,7 @@ class GhostItem extends React.Component {
       placename: '',
       placeid: '',
       hangKey: '',
+      showdesc: false,
     }
     this.getPlace = this.getPlace.bind(this);
     this.placeCallback = this.placeCallback.bind(this);
@@ -87,13 +88,18 @@ class GhostItem extends React.Component {
 
   placeCallback = (results, status) => {
     if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-      if(results[1]){
-        if(results[1].photos && results[1].photos.length > 0){
-          var placePhotoUrl = results[1].photos[0].getUrl({maxWidth:640});
+      var result;
+      results.map(function(obj){
+          if (obj.user_ratings_total > 10) result = obj;
+          return console.log("obj");
+      });
+      if(result){
+        if(result.photos && result.photos.length > 0){
+          var placePhotoUrl = result.photos[0].getUrl({maxWidth:640});
           this.setState({placeimg: placePhotoUrl});
         }
-        this.setState({placeid: results[1]['id']});
-        this.setState({placename: results[1]['name']});
+        this.setState({placeid: result['id']});
+        this.setState({placename: result['name']});
       }
     }
   }
@@ -104,12 +110,12 @@ class GhostItem extends React.Component {
 
     let map = new window.google.maps.Map(mapdom, {
         center: maploc,
-        zoom: 15
+        zoom: 20
       });
 
     let request = {
       location: maploc,
-      radius: '1'
+      radius: '15'
     };
 
     let service = new window.google.maps.places.PlacesService(map);
@@ -167,7 +173,7 @@ class GhostItem extends React.Component {
          const placeHangsRef = firebase.database().ref(`/places/${key}/hangs/`);
          Object.entries(place).map((p) => {
             placeHangsRef.push(this.state.hangKey);
-            return;
+            return console.log("p");
          });
          console.log('Place exists. Add new hang');
          return;
@@ -186,13 +192,14 @@ class GhostItem extends React.Component {
 
   getLocale(lat,lng){
     var geocode = {
-      'latitude': lat,
-      'longitude': lng,
+    'latitude': lat,
+    'longitude': lng,
+    'key': 'AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY'
     };
 
     var location = async () => {
     return new Promise((resolve, reject) => {
-      revgeo.location(geocode, (err, result) => {
+      geocoding.location(geocode, (err, result) => {
           if(err){
             console.log(err);
             reject(err);
@@ -222,6 +229,10 @@ class GhostItem extends React.Component {
     distance = (distance/1000) * 0.621371;
     distance = distance.toFixed(1);
     this.setState({distance});
+  }
+
+  toggleInfo () {
+    this.setState({showdesc: !this.state.showdesc})
   }
 
   render() {
@@ -270,41 +281,68 @@ class GhostItem extends React.Component {
                 </tr>
                 </tbody>
               </table>
-              <button
-                className="btn-hang-action"
-                onClick={(e) =>
-                  this.claimHang(
-                    this.props.event.title,
-                    this.props.user,
-                    this.props.event.start,
-                    this.props.event.location[1],
-                    this.props.event.location[0],
-                    this.state.placename,
-                    e
-                  )
-                }>
-                <i className="fa fa-plus"></i> Join
-              </button>
+              {!this.state.showdesc &&
+                <button
+                  className="btn-hang-action"
+                  onClick={(e) =>
+                    this.claimHang(
+                      this.props.event.title,
+                      this.props.user,
+                      this.props.event.start,
+                      this.props.event.location[1],
+                      this.props.event.location[0],
+                      this.state.placename,
+                      e
+                    )
+                  }>
+                  <i className="fa fa-plus"></i> Go
+                </button>
+              }
             </td>
           </tr>
           </tbody>
         </table>
         <div className="hang-item-graphic" style={hangImage}>
-        {!this.state.placeimg &&
-        <div>
-          <div id="map" ref={'map'} />
-          <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.event.location[1]+'%2C'+this.props.event.location[0]+'&query_place_id='+this.props.event.place}>
-            <StaticGoogleMap
-              size={this.props.mapsize}
-              center={this.props.event.location[1]+','+this.props.event.location[0]}
-              zoom="18"
-              apiKey="AIzaSyCkDqWy12LJpqhVuDEbMNvbM_fbG_5GdiA"
-            >
-              <Marker location={this.props.event.location[1]+','+this.props.event.location[0]} color="0xff0000" />
-            </StaticGoogleMap>
-          </a>
-        </div>
-        }
+          {!this.state.showdesc && this.props.event.description &&
+            <div
+              className="btn-hang-info"
+              onClick={(e) =>
+                this.toggleInfo()
+              }>
+              <i className="fa fa-info-circle"></i>
+            </div>
+          }
+          {!this.state.placeimg &&
+          <div>
+            <div id="map" ref={'map'} />
+            <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.event.location[1]+'%2C'+this.props.event.location[0]+'&query_place_id='+this.props.event.place}>
+              <StaticGoogleMap
+                size={this.props.mapsize}
+                center={this.props.event.location[1]+','+this.props.event.location[0]}
+                zoom="18"
+                apiKey="AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY"
+              >
+                <Marker location={this.props.event.location[1]+','+this.props.event.location[0]} color="0xff0000" />
+              </StaticGoogleMap>
+            </a>
+          </div>
+          }
+          {this.state.showdesc &&
+            <div>
+              <div className="hang-item-desc-wrapper">
+                <div className="hang-item-desc">
+                  {this.props.event.description}
+                </div>
+              </div>
+              <div
+                className="hang-item-desc-close"
+                onClick={(e) =>
+                  this.toggleInfo()
+                }>
+                <i className="fa fa-times"></i>
+            </div>
+            </div>
+          }
         </div>
         </span>
       </span>;

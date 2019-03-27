@@ -9,6 +9,7 @@ a {
 }
 a:hover {
   text-decoration: none;
+  cursor: pointer;
 }
 *:focus {
   outline: none;
@@ -98,6 +99,14 @@ canvas {
 .fa-map-marker {
   color: #fc5121;
 }
+.fa-star {
+  color: #fff;
+  font-size: 0.7rem;
+  margin: 0 1px 0 0;
+}
+.fa-times {
+  color: red;
+}
 .fa-times.clear-submit {
   color: #000;
   position: absolute;
@@ -106,6 +115,32 @@ canvas {
 }
 .fa-clock-o {
   color: #ec008c;
+}
+.fa.nav-btn.fa-home {
+  font-size: 1.25rem !important;
+  line-height: 2rem;
+}
+.fa.nav-btn.top-left {
+  position: absolute;
+  top: 0.75rem;
+  left: -1rem;
+  font-size: 2rem;
+  background: #fff;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  width: 2rem;
+  height: 2rem;
+}
+.fa.nav-btn.top-right {
+  position: absolute;
+  top: 0.75rem;
+  right: -1rem;
+  font-size: 2rem;
+  background: #fff;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  width: 2rem;
+  height: 2rem;
 }
 .white {
   color: white;
@@ -165,9 +200,11 @@ canvas {
     padding-top: calc(70px + 1.5rem);
   }
 }
-.wrapper {
-  max-width: 1100px;
-  margin: 0 auto;
+@media only screen and (min-width: 400px) and (max-width: 1050px) {
+  .wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
 }
 .center {
   text-align: center;
@@ -376,6 +413,7 @@ canvas {
   border-top-left-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
   color: white;
+  white-space: nowrap;
 }
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   .user-points {
@@ -397,6 +435,38 @@ canvas {
     border-bottom-left-radius: 0.25rem;
   }
 }
+.user-invites {
+  position: fixed;
+  top: 1.3rem;
+  right: 2.1rem;
+  font-size: 9px;
+  padding: 0 0.3rem;
+  height: 1rem;
+  line-height: 1rem;
+  background: red;
+  color: white;
+  white-space: nowrap;
+  border-radius: 0.2rem;
+  z-index: 9;
+}
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .user-invites {
+    top: 1.3rem;
+    right: 2.1rem;
+  }
+}
+@media only screen and (min-width: 801px) and (max-width: 1050px) {
+  .user-invites {
+    top: 1.3rem;
+    right: 2.1rem;
+  }
+}
+@media only screen and (min-width: 1051px) {
+  .user-invites {
+    top: 2.95rem;
+    right: 3.2rem;
+  }
+}
 .user-profile-image {
   width: 30px;
   position: relative;
@@ -405,7 +475,6 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-right: 1.5rem;
   z-index: 1;
 }
 @media only screen and (min-width: 1050px) {
@@ -413,10 +482,15 @@ canvas {
     justify-content: center;
   }
 }
+.user-profile .user-profile-img {
+  border-radius: 50%;
+  margin: 0 auto;
+}
 .user-profile img {
   width: 30px;
   height: 30px;
   border-radius: 50%;
+  margin: 0 auto;
 }
 .user-profile h4 {
   font-family: 'Poppins', sans-serif;
@@ -669,6 +743,15 @@ div.input-datetime div.input-datetime div {
   font-weight: normal;
   line-height: 1.4;
 }
+.btn-hang-info {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.5rem;
+}
+.btn-hang-info .fa {
+  font-size: 1.25rem;
+  color: #fff;
+}
 .customWrapper {
   font-size: 0.75rem;
   text-align: left;
@@ -729,6 +812,11 @@ button.btn {
   font-size: 14px;
   box-shadow: 0 2px 5px 0 rgba(0,0,0,0.26);
   padding: 10px 20px;
+}
+a.btn:hover,
+button.btn:hover {
+  background: #000;
+  color: #fff;
 }
 .welcome-buttons {
   display: flex;
@@ -802,7 +890,8 @@ header {
     padding: 33px 0 25px 1rem;
   }
 }
-header.hide {
+header.hide,
+.hide {
   display: none;
 }
 header .wrapper {
@@ -1083,8 +1172,39 @@ header button.btn {
   bottom: 0;
   left: -0.5rem;
 }
+.hang-item hr {
+  border: none;
+  border-bottom: 1px solid white;
+}
 .hang-item-graphic {
   position: relative;
+}
+.hang-item-desc-wrapper {
+  position: relative;
+  background: #34b6ee;
+  color: #fff;
+  padding: 1rem 1.25rem 3rem;
+  font-size: 1rem;
+  overflow: scroll;
+  height: 150px;
+}
+.hang-item-desc {
+  padding: 0 0 2rem;
+}
+.hang-item-desc-close {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  width: calc(100% - 0.5rem);
+  background: #34b6ee;
+  text-align: right;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+}
+.hang-item-desc-close .fa {
+  color: red;
+  font-size: 1.25rem;
 }
 .hang-detail {
   width: 100%;
@@ -1411,6 +1531,60 @@ header button.btn {
   margin: 0;
   line-height: 1.2;
   font-size: 0.5rem;
+}
+.crew-row {
+  width: calc(50% - 2rem);
+}
+.crew-member-row {
+  position: relative;
+  width: 100%;
+  height: 2rem;
+  margin: 0.5rem;
+}
+.crew-member-row > .crew-member-image {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  float: left;
+  margin-right: 0.5rem;
+}
+.crew-member-name {
+  margin: 0;
+  line-height: 2.5;
+  font-size: 0.8rem;
+  text-align: left;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+.crew-member-info {
+  position: absolute;
+  top: 0.2rem;
+  right: 1rem;
+}
+.crew-member-remove {
+  position: absolute;
+  top: 0.1rem;
+  right: 0;
+  font-size: 1.25rem;
+}
+.crew-member-status {
+  font-size: 0.6rem;
+  text-transform: capitalize;
+  display: inline-block;
+  background: #34b6ee;
+  color: #fff;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  margin-right: 1.5rem;
+}
+.crew-member-status.owner {
+  background: #000;
+}
+.crew-member-status.joined {
+  background: #3EB678;
+}
+.crew-member-remove {
+  margin-top: 0.25rem;
 }
 .member-points-table {
   width: 100%;
@@ -1790,6 +1964,37 @@ header button.btn {
   cursor: no-drop !important;
 }
 
+.public .brand {
+  position: absolute;
+  top: 3rem;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto;
+  margin-left: -25px;
+  flex-direction: row;
+  background: none;
+}
+@media only screen and (min-width: 1px) and (max-width: 1050px) {
+  .public .brand {
+    top: 1.5rem;
+  }
+}
+.public .brand h1 {
+  color: #000;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+  line-height: 3rem;
+}
+.public .brand img {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 50%;
+  padding: 0.25rem;
+}
+
 .page-wrapper {
   position: relative;
   padding: 1rem;
@@ -1799,6 +2004,10 @@ header button.btn {
   width: 100%;
   max-width: calc(100% - 4rem);
   border-radius: 1rem;
+}
+
+.page-wrapper.nobkgd {
+  background: none;
 }
 
 .page-wrapper.register {
@@ -1821,7 +2030,7 @@ header button.btn {
   width: 6rem;
   height: 6rem;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
 }
 
 .page-wrapper a {
@@ -1966,4 +2175,131 @@ header button.btn {
   color: white;
   font-weight: bold;
   font-size: 8rem;
+}
+
+.group-select {
+  margin: 0.8rem 0 0;
+}
+
+.group-select * {
+  font-family: 'Roboto', sans-serif;
+}
+
+.group-select div:nth-child(3) {
+  font-size: 0.8rem;
+  text-align: left;
+  text-transform: capitalize;
+}
+
+.group-creation-form > div {
+  width: 100% !important;
+}
+
+.groups h4 {
+  margin: 0;
+}
+
+.groups .add-group-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 1rem;
+}
+
+.groups-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.groups-row {
+  width: 100%;
+}
+
+.groups-row td {
+  padding: 0.25rem 0.5rem;
+}
+
+.groups-row:nth-child(even) {
+  background: #efefef;
+}
+
+.group-name {
+  text-align: left;
+  width: 90%;
+}
+
+.group-name strong {
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.group-name .group-number {
+  font-size: 0.6rem;
+  border-radius: 0.2rem;
+  background: red;
+  height: 1rem;
+  line-height: 1rem;
+  color: white;
+  display: inline-block;
+  text-align: center;
+  margin-left: 0.25rem;
+  padding: 0 0.2rem;
+}
+
+.group-sms-name {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.group-options {
+  text-align: right;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.group-options .fa {
+  margin-left: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.addphone .react-tel-input {
+  font-family: 'Roboto',sans-serif;
+  font-size: 15px;
+  position: relative;
+  width: 63%;
+  margin: 1rem auto;
+  padding-left: 3rem;
+}
+
+.addphone .react-tel-input input[type=text],
+.addphone .react-tel-input input[type=tel] {
+  position: relative;
+  font-size: 14px;
+  letter-spacing: .01rem;
+  z-index: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-left: 1rem;
+  margin-left: 0;
+  background: #FFFFFF;
+  border: 1px solid #CACACA;
+  border-radius: 5px;
+  line-height: 25px;
+  height: 35px;
+  width: auto;
+  outline: none;
+}
+
+.addphone .react-tel-input .country-list {
+  list-style: none;
+  position: absolute;
+  z-index: 15;
+  padding: 0;
+  margin: 10px 0 10px -1px;
+  box-shadow: 1px 2px 10px rgba(0,0,0,0.35);
+  background-color: white;
+  width: 250px;
+  max-height: 200px;
+  overflow-y: scroll;
+  border-radius: 0 0 3px 3px;
+  text-align: left;
 }

@@ -31,6 +31,7 @@ class Place extends React.Component {
             }
           }
         });
+        return console.log("key");
       });
     }
   }

@@ -1,5 +1,6 @@
 import React from "react";
 import firebase from './firebase.js';
+import {Route} from 'react-router-dom';
 
 class HeaderPoints extends React.Component {
   constructor(props) {
@@ -26,12 +27,17 @@ class HeaderPoints extends React.Component {
         let total = 0;
         Object.entries(this.state.points).map((p,i) => {
           let points = p[1];
-          let desc = Object.keys(points);
           let value = Object.values(points);
-          total = parseInt(total) + parseInt(value);
+          total = parseInt(total, 10) + parseInt(value, 10);
+          return total;
         });
         return (
-          <span className='user-points'>{total}</span>
+          <Route render={({history}) => (
+              <a onClick={() => {history.push('/points/total') }}
+                 className='user-points'>
+                  <i className='fa fa-star'></i>{total}
+              </a>
+          )}/>
         );
     }
 }

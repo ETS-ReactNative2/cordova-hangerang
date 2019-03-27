@@ -31,12 +31,6 @@ class Home extends Component {
     this.goToSection = this.goToSection.bind(this);
   }
 
-  componentDidMount = () => {
-    setTimeout(() => {
-      this.setState({timeout: true});
-    }, 15000);
-  }
-
   goToSection(section){
     scroller.scrollTo(section, {
       duration: 1500,
