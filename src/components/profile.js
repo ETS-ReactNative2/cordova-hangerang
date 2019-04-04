@@ -3,6 +3,14 @@ import firebase, { base } from './firebase.js';
 import Gravatar from 'gravatar';
 
 class Profile extends React.Component {
+
+  constructor() {
+    super();
+    this.state = {
+      member: {} 
+    }
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     const memberRef = firebase.database().ref(`/members/${this.props.uid}`);
@@ -38,9 +46,7 @@ class Profile extends React.Component {
   }
 
   render() {
-    const {
-      member
-    } = this.state;
+    const { member } = this.state;
 
     return (
       <div className="profile page-wrapper">

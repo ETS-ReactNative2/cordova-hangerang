@@ -7,6 +7,7 @@ import Moment from 'react-moment';
 import geocoding from 'reverse-geocoding-google';
 import geolib from 'geolib';
 import { StaticGoogleMap, Marker } from 'react-static-google-map';
+import emoji from 'node-emoji';
 
 var hashids = new Hashids('', 5);
 
@@ -115,12 +116,25 @@ class GhostItem extends React.Component {
 
     let request = {
       location: maploc,
-      radius: '15'
+      radius: '15',
+      name: this.state.placename,
     };
 
     let service = new window.google.maps.places.PlacesService(map);
     service.nearbySearch(request, this.placeCallback);
   }
+
+  getEmojiFromCategories = ((arr) => {
+    if(arr){
+      Object.entries(arr).map((item) => {
+        let string = item[1];
+        string = string.replace("-", " ");
+        if(emoji.hasEmoji(string)){
+          return emoji.get(string);
+        }
+      });
+    }
+  });
 
   claimHang(title,user,datetime,lat,lng,address,e) {
     e.preventDefault();
@@ -245,6 +259,7 @@ class GhostItem extends React.Component {
       borderBottomLeftRadius: "0.5rem",
       borderBottomRightRadius: "0.5rem",
     }
+
     let Event =
       <span>
         <span ref="detail">
@@ -260,6 +275,7 @@ class GhostItem extends React.Component {
                   {this.props.event.start}
                 </Moment> @ {this.state.placename} &bull; {this.state.distance} mi.
               </span>
+              <div>{this.getEmojiFromCategories(this.props.event.labels)}</div>
             </td>
             <td>
               <table style={hangDate}>

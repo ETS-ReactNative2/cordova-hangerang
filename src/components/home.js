@@ -3,11 +3,13 @@ import logo from '../assets/logo.png';
 import Scroll from 'react-scroll';
 import MailchimpSubscribe from "react-mailchimp-subscribe";
 import { ShareButtons, generateShareIcon } from 'react-share';
+//import Mailchimp from 'mailchimp-api-v3';
 
 import Login from './login.js';
 import Register from './register.js';
 
-var scroller = Scroll.scroller;
+//let mailchimp = new Mailchimp('3eaef4c12d444b5a13b419b2ddf46218-us17');
+let scroller = Scroll.scroller;
 
 const FacebookIcon = generateShareIcon('facebook');
 const TwitterIcon = generateShareIcon('twitter');
@@ -95,18 +97,25 @@ class Home extends Component {
             </div>
             :
             <div className={'sign-up'}>
-            We need <strong>1,000</strong> interested people. Once that happens we <strong>go live!</strong>
+            {/*We need <strong>1,000</strong> interested people. Once that happens we <strong>go live!</strong>*/}
+            We launch in <strong>Mid-April</strong>. Sign up to become an exclusive founding member!
             <MailchimpSubscribe url={url}/>
             <span className="share-ui">
               <span>Share with friends:</span>
               <span className="share-buttons">
-                <FacebookShareButton url={shareUrl} quote={'Join Me on Hangerang, A new app for getting together!'}>
+                <FacebookShareButton url={shareUrl}
+                  quote={'Join Me on Hangerang, A new app for getting together! https://hangerang.us!'}>
                   <FacebookIcon size={32} round />
                 </FacebookShareButton>
-                <TwitterShareButton url={shareUrl} quote={'Join Me on Hangerang, A new app for getting together!'}>
+                <TwitterShareButton url={shareUrl}
+                  title={'Join Me on Hangerang, A new app for getting together!'}>
                   <TwitterIcon size={32} round />
                 </TwitterShareButton>
-                <EmailShareButton url={shareUrl} quote={'Join Me on Hangerang, A new app for getting together!'}>
+                <EmailShareButton
+                  url={shareUrl}
+                  subject={'Join Me on Hangerang, A new app for getting together!'}
+                  body={"Check it out: https://hangerang.us!"}
+                >
                   <EmailIcon size={32} round />
                 </EmailShareButton>
               </span>

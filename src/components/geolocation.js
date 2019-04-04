@@ -5,12 +5,15 @@ import GeoFire from 'geofire';
 import mmnt from 'moment';
 import geocoding from 'reverse-geocoding-google';
 import {geolocated} from 'react-geolocated';
+import ip from 'ip';
+import iplocation from "iplocation";
 import Client from 'predicthq';
 
 class Geolocation extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      getGeo: false,
       address: this.props.address,
       movies: []
     }
@@ -30,6 +33,31 @@ class Geolocation extends React.Component {
   //     console.log(results);
   //   });
   // }
+
+  componentWillMount = () => {
+    this.getLocByIp();
+  }
+
+  getLocByIp(){
+    let ipaddr = '73.42.126.133';
+    //let ipaddr = ip.address();
+    iplocation(ipaddr)
+    .then((res) => {
+      if(res.latitude && res.longitude){
+        this.setState({
+          address: res.city+', '+res.regionCode+', '+res.countryCode,
+          lat: res.latitude,
+          lng: res.longitude,
+        });
+        this.getLocale(res.latitude,res.longitude,this.props.user);
+      }else{
+        this.setState({getGeo: true});
+      }
+    })
+    .catch(err => {
+      console.log(err);
+    });
+  }
 
   uniq(array, prop) {
    var newArray = [];
@@ -86,7 +114,7 @@ class Geolocation extends React.Component {
     'key': 'AIzaSyCLpF3Kgl5ILBSREQ2-v_WNxBTuLi1FxXY'
     };
 
-    if(lat && lng && geocode){
+    if(lat && lng && geocode && this.state.getGeo){
       var location = async () => {
       return new Promise((resolve, reject) => {
         geocoding.location(geocode, (err, result) => {
@@ -113,29 +141,41 @@ class Geolocation extends React.Component {
 
   render() {
     return (
-    <div className="user-geolocation">
-        { !this.props.address ?
-          !this.props.isGeolocationAvailable
-          ? <div>Your browser does not support Geolocation</div>
-          : !this.props.isGeolocationEnabled
-            ? <div>Geolocation is not enabled</div>
-            : this.props.coords
-              ?
-                 <div className="hangs-nearby">
-                   <Async
-                     promise={this.getLocale(this.props.coords.latitude,this.props.coords.longitude,this.props.user)}
-                    />
-                   <h3>
-                     <i className={'fa fa-map-marker'}></i> <span>{this.props.address}</span>
-                   </h3>
-                 </div>
-              : <div className="hangs-nearby"><h3>Getting location <i className="fa fa-circle-o-notch fa-spin"></i></h3></div>
-            : <div className="hangs-nearby">
-               <h3>
-                 <i className={'fa fa-map-marker'}></i> <span>{this.props.address}</span>
-               </h3>
-             </div>
-        }
+    <div>
+      {this.state.getGeo ? <div className="user-geolocation">
+          { !this.props.address ?
+            !this.props.isGeolocationAvailable
+            ? <div>Your browser does not support Geolocation</div>
+            : !this.props.isGeolocationEnabled
+              ? <div>Geolocation is not enabled</div>
+              : this.props.coords
+                ?
+                   <div className="hangs-nearby">
+                     <Async
+                       promise={this.getLocale(this.props.coords.latitude,this.props.coords.longitude,this.props.user)}
+                      />
+                     <h3>
+                       <i className={'fa fa-map-marker'}></i> <span>{this.props.address}</span>
+                     </h3>
+                   </div>
+                : <div className="hangs-nearby"><h3>Getting location <i className="fa fa-circle-o-notch fa-spin"></i></h3></div>
+              : <div className="hangs-nearby">
+                 <h3>
+                   <i className={'fa fa-map-marker'} onClick={()=>{this.setState({getGeo: false});this.getLocByIp();}}></i>
+                   &nbsp; <span>{this.props.address}</span>
+                 </h3>
+               </div>
+             }
+      </div> :
+      <div className="user-geolocation">
+        <div className="hangs-nearby">
+           <h3>
+             <span>{this.state.address}</span>&nbsp;
+             <i className={'fa fa-map-marker blue'} onClick={()=>{this.setState({getGeo: true});}}></i>
+           </h3>
+         </div>
+      </div>
+    }
     </div>
     )
   }

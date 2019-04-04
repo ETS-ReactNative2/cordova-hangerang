@@ -47,6 +47,7 @@ import Privacy from './components/privacy.js';
 import Profile from './components/profile.js';
 //import Scan from './components/scan.js';
 import TermsConditions from './components/terms.js';
+import ZZomato from './components/zomato.js';
 
 //Actions
 import { getPoints } from './helpers/points.js';
@@ -899,6 +900,21 @@ class App extends PureComponent {
                         : ''}
                         </span>
                         <section className='display-hang'>
+                          {this.state.geoReady &&
+                           this.state.mode === 'nearby' &&
+                            <div>
+                            <ZZomato
+                              lat={this.state.geoReady.lat}
+                              lng={this.state.geoReady.lng}
+                            />
+                            </div>
+                          }
+                          {this.state.hangs &&
+                            this.state.hangsReady &&
+                            this.state.geoReady &&
+                            this.state.mode === 'nearby' &&
+                           <h4 className="center home-header">Things Happening Soon</h4>
+                          }
                           {this.state.hangs &&
                             this.state.hangsReady &&
                             this.state.geoReady ?
