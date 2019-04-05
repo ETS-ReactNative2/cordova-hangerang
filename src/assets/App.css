@@ -706,6 +706,20 @@ div.input-datetime div.input-datetime {
 div.input-datetime div.input-datetime div {
   display: block;
 }
+div.input-where-filled {
+  position: relative;
+}
+div.input-where-filled div.input-title {
+  width: 82% !important;
+}
+div.input-where-filled div.input-title input {
+  color: #34b6ee !important;
+}
+div.input-where-filled svg {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+}
 @media only screen and (min-width: 1050px) {
   .add-hang-footer {
     width: 15%;
@@ -1849,6 +1863,7 @@ header button.btn {
 }
 .popupbox-content {
   overflow: hidden;
+  padding: 0 !important;
 }
 .popupbox-wrapper {
   display: -webkit-flex;
@@ -1927,6 +1942,55 @@ header button.btn {
 .popupbox.is-active {
   opacity: 1;
   pointer-events: auto;
+}
+.popup-content > div {
+  padding: 1rem;
+}
+.card-popup {
+  text-align: center;
+  position: relative;
+}
+.card-popup .fa-times {
+  position: absolute;
+  color: #34b6ee;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.25rem;
+}
+.card-popup-header {
+  color: #fff;
+}
+.card-popup-content {
+  line-height: 1.4;
+  padding: 1rem 3rem 0.5rem;
+}
+.card-popup-content h5 {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+}
+.card-popup-content .price img {
+  width: 1rem;
+  height: 1rem;
+  padding: 0 0.15rem;
+}
+.card-popup-content .rc-rate {
+    font-size: 1rem;
+}
+.card-popup-bottom {
+  width: 100%;
+  height: 36px;
+  background: #efefef;
+}
+.card-popup-makehang {
+  width: 100%;
+  height: 36px;
+  line-height: 36px;
+  background: #34b6ee;
+  color: #fff;
+  text-align: center;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 .toggle-wrapper {
   position: relative;
@@ -2278,9 +2342,9 @@ header button.btn {
 
 .slick-slide h4 {
   margin: 0;
-  padding: 0.5rem 0 0;
+  padding: 0.5rem 0;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .slick-slide img {
@@ -2291,7 +2355,7 @@ header button.btn {
 
 @media only screen and (min-width: 320px) and (max-width: 720px) {
   .slick-slide h4 {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -2420,6 +2484,23 @@ header button.btn {
   overflow-y: scroll;
   border-radius: 0 0 3px 3px;
   text-align: left;
+}
+
+.open-status {
+  padding: 0.25rem;
+  margin-bottom: 0.25rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+  color: #fff;
+  font-size: 0.5rem;
+}
+
+.open-status.red {
+  background: #f41c21;
+}
+
+.open-status.green {
+  background: #00aa55;
 }
 
 .rc-rate {

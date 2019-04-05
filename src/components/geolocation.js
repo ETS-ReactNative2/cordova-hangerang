@@ -39,8 +39,8 @@ class Geolocation extends React.Component {
   }
 
   getLocByIp(){
-    let ipaddr = '73.42.126.133';
-    //let ipaddr = ip.address();
+    //let ipaddr = '73.42.126.133';
+    let ipaddr = ip.address();
     iplocation(ipaddr)
     .then((res) => {
       if(res.latitude && res.longitude){

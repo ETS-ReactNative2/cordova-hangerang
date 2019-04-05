@@ -13,7 +13,7 @@ class ZZomato extends React.Component {
       show: false,
       result: {},
       mode: 'food',
-      modetitle: '',
+      modeTitle: '',
     }
   }
 
@@ -27,7 +27,8 @@ class ZZomato extends React.Component {
   }
 
   foodQuery = () => {
-    this.setState({modetitle: 'Places to Eat'});
+    this.setState({modeTitle: 'Places to Eat'});
+    this.setState({hangTitle: 'Eat Food'});
     const { lat,lng } = this.props;
     const z = new Zomato('6836545ad5ff91d9a8795ff1d18b7b9c');
     //const z = new Zomato('2c2925ab93a6f8d9b1f4d1a31dfaec54');
@@ -50,7 +51,8 @@ class ZZomato extends React.Component {
   }
 
   coffeeQuery = () => {
-    this.setState({modetitle: 'Coffee, Tea and More'});
+    this.setState({modeTitle: 'Coffee, Tea and More'});
+    this.setState({hangTitle: 'Get Caffeinated'});
     const { lat,lng } = this.props;
     const z = new Zomato('6836545ad5ff91d9a8795ff1d18b7b9c');
     //const z = new Zomato('d1d9c6b0c649fa8b0f4d18ac235db4b5');
@@ -76,7 +78,8 @@ class ZZomato extends React.Component {
   }
 
   drinkQuery = () => {
-    this.setState({modetitle: 'Breweries'});
+    this.setState({modeTitle: 'Breweries'});
+    this.setState({hangTitle: 'Grab a Drink'});
     const { lat,lng } = this.props;
     const z = new Zomato('6836545ad5ff91d9a8795ff1d18b7b9c');
     //const z = new Zomato('d1d9c6b0c649fa8b0f4d18ac235db4b5');
@@ -121,7 +124,7 @@ class ZZomato extends React.Component {
   }
 
   render() {
-    const { mode, modetitle, result, show } = this.state;
+    const { mode, modeTitle, result, show } = this.state;
     var settings = {
       infinite: false,
       slidesToShow: 5,
@@ -158,16 +161,24 @@ class ZZomato extends React.Component {
         item = item[1];
       }
       return (
-         <div key={'zom-'+i} style={Image}>
-            <Zcard key={'zom-item-'+i} item={item} nth={i} />
-         </div>
+        <Zcard
+         lat={this.props.lat}
+         lng={this.props.lng}
+         key={'zom-card'+item.id+'-'+i}
+         item={item}
+         nth={i}
+         toggleForm={this.props.toggleForm}
+         setLocation={this.props.setLocation}
+         setName={this.props.setName}
+         setTitle={this.props.setTitle}
+        />
       )
     });
 
     return (
       <div>
         <div className="section-header">
-          <h4>{modetitle}</h4>
+          <h4>{modeTitle}</h4>
           <div className="menu">
             <i
               onClick={() => {this.setMode('food')}}

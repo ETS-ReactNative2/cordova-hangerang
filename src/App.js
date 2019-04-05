@@ -105,11 +105,11 @@ class App extends PureComponent {
       lat: '',
       lng: '',
       mode: 'nearby',
-      selectedIndex: 0,
+      selectedIndex: 1,
       value: '',
       copied: false,
       getLocation: false,
-      visibility: 'groups',
+      visibility: 'invite',
       //joyride
       currentStep: 0,
       joyrideOverlay: true,
@@ -166,7 +166,7 @@ class App extends PureComponent {
 
     this.setState({
       mode: 'hangs',
-      selectedIndex: 0
+      selectedIndex: 1
     });
 
     const hangsRef = firebase.database().ref('hangs');
@@ -872,6 +872,7 @@ class App extends PureComponent {
                           location={this.state.location}
                           submit={this.state.submit}
                           title={this.state.title}
+                          name={this.state.name}
                           user={this.state.user}
                           username={this.state.username}
                           joyrideType={joyrideType}
@@ -906,6 +907,9 @@ class App extends PureComponent {
                             <ZZomato
                               lat={this.state.geoReady.lat}
                               lng={this.state.geoReady.lng}
+                              toggleForm={this.toggleForm}
+                              setLocation={this.setLocation}
+                              setName={this.setName}
                             />
                             </div>
                           }
