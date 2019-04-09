@@ -33,7 +33,8 @@ class GoogleSuggest extends React.Component {
   }
 
   render() {
-    const {search,value} = this.state
+    const {search,value} = this.state;
+    const {types} = this.props;
     return (
       <div className="input-location">
       <ReactGoogleMapLoader
@@ -47,17 +48,18 @@ class GoogleSuggest extends React.Component {
               googleMaps={googleMaps}
               autocompletionRequest={{
                 input: search,
+                types: types
                 // Optional options
                 // https://developers.google.com/maps/documentation/javascript/reference?hl=fr#AutocompletionRequest
               }}
               // Optional props
               onSelectSuggest={this.handleSelectSuggest.bind(this)}
-              textNoResults="My custom no results text" // null or "" if you want to disable the no results item
+              textNoResults="No results found for your search." // null or "" if you want to disable the no results item
               customRender={prediction => (
                 <div className="customWrapper">
                   {prediction
                     ? prediction.description
-                    : "My custom no results text"}
+                    : "No results found for your search."}
                 </div>
               )}
             >
@@ -65,7 +67,7 @@ class GoogleSuggest extends React.Component {
                 name="place"
                 type="text"
                 value={value}
-                placeholder="Where?"
+                placeholder={this.props.placeholder}
                 onChange={this.handleInputChange.bind(this)}
               />
             </ReactGooglePlacesSuggest>

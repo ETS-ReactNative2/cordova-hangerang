@@ -26,6 +26,24 @@ canvas {
 .x-small {
   font-size: 0.5rem;
 }
+.normal {
+  font-weight: normal;
+}
+.capitalize {
+  text-transform: capitalize;
+}
+.capsule {
+  display: inline-block;
+  border-radius: 1.5rem;
+  padding: 0.25rem 0.75rem;
+  margin: 0.5rem 0;
+  background: #00BB77;
+  color: #fff;
+}
+.capsules .capsule {
+  line-height: 1;
+  margin: 0.25rem;
+}
 .page {
   background: #fff;
   margin: 0 auto;
@@ -36,10 +54,12 @@ canvas {
   font-size: 1rem;
   transform: translateY(50deg);
   cursor: pointer;
-  color: #34b6ee;
+  color: lightgrey;
+  //color: #34b6ee;
 }
 .fa:hover {
-  color: #000;
+  //color: #000;
+  color: #34b6ee;
 }
 .fa span {
   display: none;
@@ -52,6 +72,9 @@ canvas {
 }
 .fa-trash {
   color: #aaa;
+}
+.fa-diamond {
+  color: #34b6ee;
 }
 .fa.fa-link {
   color: #fff;
@@ -554,6 +577,9 @@ canvas {
     right: 4rem;
   }
 }
+.user-profile-contact {
+  margin: 0.5rem;
+}
 .add-hang,
 .add-hang-fixed {
   border-radius: 2px;
@@ -869,6 +895,16 @@ button.btn:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0.5rem 0;
+}
+.welcome-buttons .fa.fa-link {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+}
+.welcome-buttons .fa,
+.welcome-buttons .SocialMediaShareButton {
+  margin: 0 0.25rem;
 }
 .btn.btn-page-wrapper {
   background: black;
@@ -877,7 +913,7 @@ button.btn:hover {
 .btn.login {
   background: #000;
 }
-.btn.make {
+.btn.pink {
   width: calc(50vw - 4rem);
   height: 55px;
   background: #ec008c;
@@ -889,7 +925,7 @@ button.btn:hover {
   justify-content: center;
   align-items: center;
 }
-.btn.nearby {
+.btn.blue {
   width: calc(50vw - 4rem);
   height: 55px;
   background: #34b6ee;
@@ -905,7 +941,7 @@ button.btn:hover {
   .welcome-buttons {
     margin-top: 1rem;
   }
-  .btn.make, .btn.nearby {
+  .btn.pink, .btn.blue {
     width: 200px;
     height: auto;
   }
@@ -1901,7 +1937,11 @@ header button.btn {
   box-shadow: 0 0 20px rgba(0,0,0,0.9);
   background-color: #fff;
 }
-.popupbox-content {
+.popupbox-content > .popupbox-pad {
+  padding: 20px 24px 30px;
+}
+.popupbox-content > div > span {
+  display: inline-block;
   padding: 20px 24px 30px;
 }
 .popupbox-content input {
@@ -2602,4 +2642,127 @@ header button.btn {
 
 .anticon-star:before {
   content: "\e660";
+}
+
+.steps {
+  position: relative;
+  display: flex;
+  list-style: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.steps:after{
+  content: '';
+  position: absolute;
+  top: 0.55rem;
+  border-bottom: 2px solid #efefef;
+  width: calc(100% - 1rem);
+  left: 0.5rem;
+  right: 0.5rem;
+  height: 2px;
+  z-index: 0;
+}
+
+.steps li {
+  background: #efefef;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+  z-index: 1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+}
+
+.steps li.active {
+    background: #34b6ee;
+    color: #fff;
+}
+
+.choices {
+  position: relative;
+}
+
+.choices input {
+  display: none;
+}
+
+.choices label {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  //background: #34b6ee;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  cursor: pointer;
+}
+
+.choices label:hover {
+  opacity: 0.9;
+}
+
+@media only screen and (min-width: 320px) and (max-width: 374px) {
+  .choices label {
+    width: 3.33rem;
+    height: 3.33rem;
+    font-size: 0.6rem;
+  }
+}
+
+@media only screen and (min-width: 375px) and (max-width: 413px) {
+  .choices label {
+    width: 4.25rem;
+    height: 4.25rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media only screen and (min-width: 414px) and (max-width: 767px) {
+  .choices label {
+    width: 5rem;
+    height: 5rem;
+    font-size: 0.8rem;
+  }
+}
+
+.choices input:checked + label{
+  background: #000;
+}
+
+.food-drink {
+  background: #f41c21;
+}
+.arts-crafts {
+  background: #fc5121;
+}
+.music-concerts {
+  background: #fbaf17;
+}
+.trails-views {
+  background: #00bb77;
+}
+.stage-screen {
+  background: #11c8cd;
+}
+.sports-fitness {
+  background: #34b6ee;
+}
+.help-giving {
+  background: #652c90;
+}
+.words-stories {
+  background: #c724eb;
+}
+.games-trivia {
+  background: #ec008c;
 }

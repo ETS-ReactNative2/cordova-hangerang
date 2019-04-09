@@ -7,7 +7,7 @@ class Profile extends React.Component {
   constructor() {
     super();
     this.state = {
-      member: {} 
+      member: {}
     }
   }
 
@@ -63,9 +63,25 @@ class Profile extends React.Component {
                    alt={"Profile Picture for:"+member.email} />
               }
             </div>
-          <h3>{member.name}</h3>
-          <div><i className='fa fa-envelope'></i> {member.email}</div>
-          <div><i className='fa fa-phone'></i> {member.tel}</div>
+            <h3>{member.name}</h3>
+            <div><i className='fa fa-map-marker'></i> {member.address}</div>
+            <hr />
+            <div className="user-profile-contact">
+              <div className='small'><i className='fa fa-envelope'></i> {member.email}</div>
+              <div className='small'><i className='fa fa-phone'></i> {member.tel}</div>
+            </div>
+            <hr />
+            <div className="capsules">
+              {member.interests && member.interests.map((i) => {
+                return(<span className={'small capsule capitalize '+i}>{i.replace('-',' & ')}</span>)
+              })}
+            </div>
+            <hr />
+            {member.gem && <div className="user-gem">
+              <div><i className='fa fa-diamond'></i></div>
+              <div><strong>{member.gem.name}</strong></div>
+              <div>"{member.gem.comment}"</div>
+            </div>}
           </div>
         }
       </div>

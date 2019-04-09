@@ -139,7 +139,7 @@ class HangForm extends React.Component {
                   <DateTimePicker format='MMM DD, YYYY hh:mm A' className={"input-datetime"} name="datetime" placeholder="When?" onChange={this.props.setDate} DatePicker={DatePickerDialog} TimePicker={TimePickerDialog} timePickerDialogStyle={{height:'1vh'}} minutesStep={15} />
                   {this.props.location.formatted_address && this.props.location.place_id && this.props.location.geometry ?
                   <div className={"input-where-filled"}><TextField className={"input-title"} value={this.props.name} /><ContentClear onClick={() => {this.props.setLocation('')}} /></div> :
-                  <GoogleSuggest name="location" onLocChange={this.props.setLocation} onNameChange={this.props.setName} getLocation={this.props.location.formatted_address} onSubmit={this.props.submit} />
+                  <GoogleSuggest name="location" placeholder="Where?" onLocChange={this.props.setLocation} onNameChange={this.props.setName} getLocation={this.props.location.formatted_address} onSubmit={this.props.submit} />
                   }
                 </div>
                 { this.props.user && this.props.title && this.props.datetime && this.props.location ?
