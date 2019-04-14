@@ -24,6 +24,7 @@ class Zcard extends React.Component {
 
   startHang = () => {
     setTimeout(() => {
+      console.log(this.state.location,this.props.item.name);
       this.props.toggleForm();
       this.props.setLocation(this.state.location);
       this.props.setName(this.props.item.name);
@@ -93,7 +94,7 @@ class Zcard extends React.Component {
     const content = (
       <div className={'card-popup'}>
         <i className={'fa fa-times'}
-        onClick={()=>{PopupboxManager.close();}}>
+        onClick={()=>{PopupboxManager.close()}}>
         </i>
         {this.state.placeimg &&
         <div style={Image} className={'card-popup-header'}></div>}
@@ -133,7 +134,7 @@ class Zcard extends React.Component {
     let time = 0;
     time = 1000+(nth*500);
     setTimeout(() => {
-      this.getPlace(item.location.latitude,item.location.longitude);
+      //this.getPlace(item.location.latitude,item.location.longitude);
     },time);
     let distance = geolib.getDistance(
       {latitude: this.props.lat, longitude: this.props.lng},

@@ -9,11 +9,56 @@ import ContentClear from 'material-ui/svg-icons/content/clear';
 import MultiToggle from 'react-multi-toggle';
 import GoogleSuggest from './places.js';
 import GroupSelect from './groupselect.js';
+import Select from 'react-select';
+import slugify from 'slugify';
+
+// const colors = [
+//   '#f41c21',
+//   '#fc5121',
+//   '#fbaf17',
+//   '#00bb77',
+//   '#11c8cd',
+//   '#34b6ee',
+//   '#652c90',
+//   '#c724eb',
+//   '#ec008c',
+// ];
+//
+const customStyles = {
+  menuList: (provided, state) => ({
+    ...provided,
+    background: 'white',
+    position: 'absolute',
+    bottom: '3rem',
+    minWidth: '300px',
+  }),
+  // multiValue: (styles) => {
+  //   return {
+  //     ...styles,
+  //     backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+  //   };
+  // },
+  // multiValueLabel: (styles) => {
+  //   return {
+  //   ...styles,
+  //   color: 'white',
+  //   fontSize: '0.9rem',
+  //   };
+  // },
+};
 
 class HangForm extends React.Component {
-  static propTypes = {
-    addSteps: PropTypes.func.isRequired,
-  };
+  constructor() {
+    super();
+    this.state = {
+      options: [],
+      selectedOption: null,
+    }
+  }
+
+  // static propTypes = {
+  //   addSteps: PropTypes.func.isRequired,
+  // };
 
   componentDidMount() {
     // this.props.addSteps([
@@ -96,9 +141,39 @@ class HangForm extends React.Component {
     //     },
     //   },
     // ]);
+    if(this.props.crew){
+      Object.entries(this.props.crew).map((c,i) => {
+        let member = c[1];
+        if(member.user){
+          this.setState(prevState => ({
+            options: [...prevState.options,
+              {
+                label: member.user,
+                status: 'invited',
+                user: member.user,
+                uid: member.uid,
+                userphoto: member.userphoto,
+                value: slugify(member.user),
+              }
+            ]
+          }));
+          return console.log("c");
+        }
+      });
+    }
+  }
+
+  handleOptionChange = (selectedOption) => {
+    this.setState({ selectedOption });
+    this.props.setInvitedCrew( selectedOption );
   }
 
   render(){
+
+      const {
+        options,
+        selectedOption,
+      } = this.state;
 
       const switchOptions = [
         {
@@ -135,6 +210,17 @@ class HangForm extends React.Component {
                   { this.props.visibility === 'groups' &&
                   <GroupSelect uid={this.props.user.uid} onChange={this.props.setInvitedGroup} />
                   }
+                  { this.props.visibility === 'invite' && this.state.options.length > 0 &&
+                     <Select
+                       className={'group-select'}
+                       value={selectedOption}
+                       placeholder={'Invite People from Crew'}
+                       onChange={this.handleOptionChange}
+                       options={options}
+                       isMulti={true}
+                       styles={customStyles}
+                     />
+                   }
                   <TextField className={"input-title"} type="text" name="title" placeholder="What to do?" onChange={this.props.handleChange} value={this.props.title} />
                   <DateTimePicker format='MMM DD, YYYY hh:mm A' className={"input-datetime"} name="datetime" placeholder="When?" onChange={this.props.setDate} DatePicker={DatePickerDialog} TimePicker={TimePickerDialog} timePickerDialogStyle={{height:'1vh'}} minutesStep={15} />
                   {this.props.location.formatted_address && this.props.location.place_id && this.props.location.geometry ?

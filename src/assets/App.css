@@ -3,6 +3,11 @@ body {
   /*background-color: #444;*/
   background-color: #e9ec00;
 }
+h2 {
+  padding: 0;
+  margin: 0;
+  font-weight: 400;
+}
 a {
   color: #34b6ee;
   text-decoration: none;
@@ -32,6 +37,12 @@ canvas {
 .capitalize {
   text-transform: capitalize;
 }
+.left {
+  text-align: left;
+}
+.no-margin {
+  margin: 0 !important;
+}
 .capsule {
   display: inline-block;
   border-radius: 1.5rem;
@@ -44,6 +55,9 @@ canvas {
   line-height: 1;
   margin: 0.25rem;
 }
+.capsules.space {
+  margin: 0.5rem 0;
+}
 .page {
   background: #fff;
   margin: 0 auto;
@@ -54,7 +68,7 @@ canvas {
   font-size: 1rem;
   transform: translateY(50deg);
   cursor: pointer;
-  color: lightgrey;
+  color: #848482;
   //color: #34b6ee;
 }
 .fa:hover {
@@ -503,6 +517,10 @@ canvas {
   justify-content: space-between;
   z-index: 1;
 }
+.user-profile-popup {
+  text-align: center;
+  padding: 1rem;
+}
 @media only screen and (min-width: 1050px) {
   .user-profile {
     justify-content: center;
@@ -715,19 +733,25 @@ canvas {
   box-sizing: border-box;
   margin: 0 0.5rem;
 }
-.add-hang-wrapper > div div,
+/* .add-hang-wrapper > div div,
 .add-msg-wrapper > div div {
   width: 100% !important;
-}
+} */
 .add-hang-wrapper > div input,
 .add-msg-wrapper > div input {
   width: 100%;
 }
-div.input-datetime > div {
-  display: none;
+.add-hang-wrapper > div.group-select div,
+.add-hang-wrapper > div.group-select input {
+  width: auto !important;
+  box-sizing: border-box;
+}
+.add-hang-wrapper > div.group-select div:nth-of-type(2) {
+  z-index: 100002;
 }
 div.input-datetime div.input-datetime {
   display: block;
+  width: 100% !important;
 }
 div.input-datetime div.input-datetime div {
   display: block;
@@ -736,7 +760,7 @@ div.input-where-filled {
   position: relative;
 }
 div.input-where-filled div.input-title {
-  width: 82% !important;
+  width: 87% !important;
 }
 div.input-where-filled div.input-title input {
   color: #34b6ee !important;
@@ -745,6 +769,14 @@ div.input-where-filled svg {
   position: absolute;
   top: 0.8rem;
   right: 0.8rem;
+}
+div.input-checkbox {
+  width: auto !important;
+  margin: 0 auto;
+}
+div.input-checkbox label {
+  white-space: nowrap;
+  font-size: 0.75rem;
 }
 @media only screen and (min-width: 1050px) {
   .add-hang-footer {
@@ -795,6 +827,9 @@ div.input-where-filled svg {
   font-size: 1.25rem;
   color: #fff;
 }
+.btn-hang-info .fa.blue {
+  color: #34b6ee;
+}
 .customWrapper {
   font-size: 0.75rem;
   text-align: left;
@@ -804,21 +839,16 @@ div.input-where-filled svg {
 .display-hang {
   width: 100%;
 }
-.display-hang .page-spinner .fa-spin {
-  font-size: 2rem;
-  margin: 6rem auto;
-  display: block;
-  text-align: center;
-}
 .display-hang button {
   margin-top: 20px;
   margin-left: auto;
   display: block;
 }
-h2 {
-  padding: 0;
-  margin: 0;
-  font-weight: 400;
+.page-spinner .fa-spin {
+  font-size: 2rem;
+  margin: 6rem auto;
+  display: block;
+  text-align: center;
 }
 .home-header {
   margin: 0.5rem 0;
@@ -936,6 +966,17 @@ button.btn:hover {
   align-self: flex-start;
   justify-content: center;
   align-items: center;
+}
+.btn.small {
+  width: auto;
+  height: auto;
+  margin: 0.5rem 0 0;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.25rem;
+  background: white;
+  border: 1px solid black;
+  color: black;
+  font-size: 0.75rem;
 }
 @media only screen and (min-width: 720px) {
   .welcome-buttons {
@@ -1129,6 +1170,9 @@ header button.btn {
 }
 .footer-nav .fa {
   font-size: 1.25rem;
+}
+.footer-nav .fa-plus {
+  color: #34b6ee;
 }
 .footer-nav div {
   color: #000 !important;
@@ -1398,9 +1442,9 @@ header button.btn {
 .hang-ui div {
   padding-left: 0.1rem;
 }
-.hang-ui button.hang-join,
-.hang-ui button.hang-leave,
-.hang-ui button.hang-check-in {
+button.hang-join,
+button.hang-leave,
+button.hang-check-in {
   background: #34b6ee;
   color: #fff;
   font-size: 0.66rem;
@@ -1409,10 +1453,10 @@ header button.btn {
   border: none;
   border-radius: 0.2rem;
 }
-.hang-ui button.hang-leave {
+button.hang-leave {
   background: #ec008c;
 }
-.hang-ui button.hang-check-in {
+button.hang-check-in {
   margin-right: 0.25rem;
 }
 .hang-member {
@@ -1672,6 +1716,9 @@ header button.btn {
 .crew-member-remove {
   margin-top: 0.25rem;
 }
+.crew-invite {
+  line-height: 2.25;
+}
 .member-points-table {
   width: 100%;
   text-align: left;
@@ -1813,7 +1860,18 @@ header button.btn {
   min-height: 40px;
   height: auto !important;
   height: 40px;
+  /*border-bottom: 1px solid #34b6ee;*/
 }
+/* Maybe not....
+/* @media only screen and (min-width: 720px) {
+  .user-geolocation {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    border: none;
+  }
+} */
 @import "_joyride.css";
 .react-add-to-calendar {
   -webkit-font-smoothing: antialiased;
@@ -1958,6 +2016,17 @@ header button.btn {
   color: #fff;
   border: none;
 }
+.popupbox-content button.crew-join {
+  background: #34b6ee;
+  color: #fff;
+  font-size: 0.66rem;
+  padding: 0.3rem;
+  margin: 0 0.25rem 0 0;
+  border: none;
+  border-radius: 0.2rem;
+  width: auto;
+  height: auto;
+}
 .popupbox-titleBar {
   font-weight: bold;
   font-size: 18px;
@@ -1990,6 +2059,7 @@ header button.btn {
   text-align: center;
   position: relative;
 }
+.user-profile-popup .fa-times,
 .card-popup .fa-times {
   position: absolute;
   color: #34b6ee;
@@ -2153,6 +2223,10 @@ header button.btn {
 .page-wrapper.register {
   width: 300px;
   max-width: none;
+}
+
+.page-wrapper.addphone {
+  max-width: calc(100% - 2rem);
 }
 
 @media only screen and (min-width: 720px) {
@@ -2324,36 +2398,36 @@ header button.btn {
   justify-content: center;
 }
 
-.slick-slider {
+.places-slider .slick-slider {
   margin: 0 0 1rem;
 }
 
 @media only screen and (min-width: 320px) and (max-width: 720px) {
-  .slick-slider {
+  .places-slider .slick-slider {
     overflow: hidden;
   }
 }
 
-.slick-slider .slick-arrow {
+.places-slider .slick-slider .slick-arrow {
   margin-top: 0;
 }
 
-.slick-slide {
+.places-slider .slick-slide {
   height: 144px;
 }
 
-.slick-slide:hover {
+.places-slider .slick-slide:hover {
   opacity: 0.8;
 }
 
-.slick-slide > div {
+.places-slider .slick-slide > div {
   border-radius: 0.5rem;
   text-align: center;
   margin: 0 0.5rem;
   color: #fff;
 }
 
-.slick-slide span {
+.places-slider .slick-slide span {
   display: block;
   position: absolute;
   top: 0;
@@ -2366,7 +2440,7 @@ header button.btn {
   z-index: 1;
 }
 
-.slick-slide > div > div > div {
+.places-slider .slick-slide > div > div > div {
   position:relative;
   background: #34b6ee;
   line-height: 1.2;
@@ -2375,28 +2449,38 @@ header button.btn {
   justify-content: center;
 }
 
-.slick-slide div.content {
+.places-slider .slick-slide div.content {
   z-index: 2;
   padding: 0.5rem;
 }
 
-.slick-slide h4 {
+.places-slider .slick-slide h4 {
   margin: 0;
   padding: 0.5rem 0;
   font-size: 1rem;
   font-weight: 600;
 }
 
-.slick-slide img {
+.places-slider .slick-slide img {
   display: inline-block !important;
   width: 0.66rem;
   padding: 0 0.1rem;
 }
 
 @media only screen and (min-width: 320px) and (max-width: 720px) {
-  .slick-slide h4 {
+  .places-slider .slick-slide h4 {
     font-size: 0.75rem;
   }
+}
+
+.members-slider.slick-slider {
+  margin: 1rem 0;
+}
+
+.members-slider.slick-slider img {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
 }
 
 .group-select {
@@ -2487,9 +2571,8 @@ header button.btn {
   font-family: 'Roboto',sans-serif;
   font-size: 15px;
   position: relative;
-  width: 63%;
+  width: 230px;
   margin: 1rem auto;
-  padding-left: 3rem;
 }
 
 .addphone .react-tel-input input[type=text],
@@ -2500,14 +2583,14 @@ header button.btn {
   z-index: 0;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
-  padding-left: 1rem;
+  padding-left: 3rem;
   margin-left: 0;
   background: #FFFFFF;
   border: 1px solid #CACACA;
   border-radius: 5px;
   line-height: 25px;
   height: 35px;
-  width: auto;
+  width: 230px;
   outline: none;
 }
 
@@ -2524,6 +2607,7 @@ header button.btn {
   overflow-y: scroll;
   border-radius: 0 0 3px 3px;
   text-align: left;
+  top: 0;
 }
 
 .open-status {

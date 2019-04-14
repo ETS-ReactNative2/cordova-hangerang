@@ -3,6 +3,7 @@ import firebase, {base} from './firebase.js';
 import Hashids from 'hashids';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import TextField from 'material-ui/TextField';
+import AddPhone from './addphone.js';
 import GoogleSuggest from './places.js';
 import ip from 'ip';
 import ipLocation from "iplocation";
@@ -33,6 +34,7 @@ class OnBoarding extends React.Component {
       }
       this.setHasShared = this.setHasShared.bind(this);
       this.setGetLocation = this.setGetLocation.bind(this);
+      this.setStep = this.setStep.bind(this);
       this.handleChange = this.handleChange.bind(this);
       this.handleSelect = this.handleSelect.bind(this);
     }
@@ -85,6 +87,10 @@ class OnBoarding extends React.Component {
 
     setGetLocation() {
       this.setState({ getLocation: true });
+    }
+
+    setStep(step){
+      this.setState({step: step});
     }
 
     handleSelect(str) {
@@ -218,6 +224,7 @@ class OnBoarding extends React.Component {
                 <li className={step === 2 ? 'active' : ''}>2</li>
                 <li className={step === 3 ? 'active' : ''}>3</li>
                 <li className={step === 4 ? 'active' : ''}>4</li>
+                <li className={step === 5 ? 'active' : ''}>5</li>
               </ul>
               {step === 1 && <div>
                 <h3 className="normal">
@@ -346,11 +353,12 @@ class OnBoarding extends React.Component {
                 <div>
                   <p>
                     Is there a <strong>hidden gem</strong><br /> in <strong>
-                    {ipLocation.city}, {ipLocation.regionCode}&nbsp;</strong><br />
+                    {this.props.userLocation}&nbsp;</strong><br />
                     that you love to visit?
                   </p>
                   <img src={Gem} alt="Gem" />
                   <MuiThemeProvider>
+                    <div>
                     <GoogleSuggest
                      name="gem"
                      onLocChange={this.props.setLocation}
@@ -358,11 +366,13 @@ class OnBoarding extends React.Component {
                      placeholder="What is this Magical Place?"
                     />
                     <TextField
+                      className={"input-title"}
                       name='special'
                       placeholder="Why is it special?"
                       onChange={this.handleChange}
                       value={this.state.special}
-                     />
+                    />
+                    </div>
                   </MuiThemeProvider>
                   {location && <div className="welcome-buttons">
                     <button
@@ -370,8 +380,23 @@ class OnBoarding extends React.Component {
                      onClick={() => {this.setUserGem()}}
                     >Save</button>
                   </div>}
+                  <a
+                    onClick={() => {this.setStep(4)}}
+                    className="small underline">
+                    I'll do this later.
+                  </a>
                 </div>}
                 {step === 4 &&
+                  <div>
+                  <AddPhone uid={this.props.uid} setStep={this.setStep} />
+                  <a
+                    onClick={() => {this.setStep(5)}}
+                    className="small underline">
+                    I'll do this later.
+                  </a>
+                  </div>
+                }
+                {step === 5 &&
                   <div>
                     <h3>Almost Done!</h3>
                     <p>
@@ -416,7 +441,7 @@ class OnBoarding extends React.Component {
                       <div>
                         <a
                           onClick={() => {this.unlockUser()}}
-                          className="underline">
+                          className="small underline">
                           I'll do this later.
                         </a>
                       </div>

@@ -200,7 +200,7 @@ class ZZomato extends React.Component {
           </div>
         </div>
         {show && result ?
-        <Slider {...settings}>
+        <Slider {...settings} className="places-slider">
           {Results}
         </Slider>
         : <div className="center page-spinner slick-empty">

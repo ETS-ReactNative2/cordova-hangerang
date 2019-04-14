@@ -101,7 +101,7 @@ class HangItem extends React.Component {
     //this.getMutualFriends = this.getMutualFriends.bind(this); /* Deprecated by Facebook :( */
     this.handleShareButton = this.handleShareButton.bind(this);
     this.toggleCalendar = this.toggleCalendar.bind(this);
-    this.getPlace = this.getPlace.bind(this);
+    //this.getPlace = //this.getPlace.bind(this);
     this.placeCallback = this.placeCallback.bind(this);
   }
 
@@ -410,7 +410,7 @@ class HangItem extends React.Component {
     if(this.props.geoReady
       && this.props.hang.lat
       && this.props.hang.lng){
-      this.getPlace(this.props.hang.lat,this.props.hang.lng);
+      //this.getPlace(this.props.hang.lat,this.props.hang.lng);
       let distance = geolib.getDistance(
         {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
         {latitude: this.props.hang.lat, longitude: this.props.hang.lng}

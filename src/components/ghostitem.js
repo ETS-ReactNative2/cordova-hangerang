@@ -83,7 +83,7 @@ class GhostItem extends React.Component {
       hangKey: '',
       showdesc: false,
     }
-    this.getPlace = this.getPlace.bind(this);
+    //this.getPlace = //this.getPlace.bind(this);
     this.placeCallback = this.placeCallback.bind(this);
   }
 
@@ -235,7 +235,7 @@ class GhostItem extends React.Component {
   }
 
   componentDidMount(){
-    this.getPlace(this.props.event.location[1],this.props.event.location[0]);
+    //this.getPlace(this.props.event.location[1],this.props.event.location[0]);
     let distance = geolib.getDistance(
       {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
       {latitude: this.props.event.location[1], longitude: this.props.event.location[0]}
@@ -325,10 +325,10 @@ class GhostItem extends React.Component {
               onClick={(e) =>
                 this.toggleInfo()
               }>
-              <i className="fa fa-info-circle"></i>
+              <i className={this.state.placeimg ? "fa fa-info-circle" : "fa fa-info-circle blue"}></i>
             </div>
           }
-          {!this.state.placeimg &&
+          {!this.state.placeimg && !this.state.showdesc &&
           <div>
             <div id="map" ref={'map'} />
             <a target="_blank" href={'https://www.google.com/maps/search/?api=1&query='+this.props.event.location[1]+'%2C'+this.props.event.location[0]+'&query_place_id='+this.props.event.place}>

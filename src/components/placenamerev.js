@@ -20,7 +20,7 @@ class GooglePlaceNameRev extends React.Component {
   render() {
     return (
       <span className="placename">
-        {this.getPlaceDetails(this.props.lat,this.props.lng)}
+        {//this.getPlaceDetails(this.props.lat,this.props.lng)}
         {this.state.name}
       </span>
     )

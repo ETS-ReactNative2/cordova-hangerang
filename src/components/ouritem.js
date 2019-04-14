@@ -191,7 +191,7 @@ class OurItem extends React.Component {
 
   componentDidMount = (result) => {
     if(this.props.geoReady){
-      this.getPlace(this.props.hang.lat,this.props.hang.lng);
+      //this.getPlace(this.props.hang.lat,this.props.hang.lng);
       let distance = geolib.getDistance(
         {latitude: this.props.geoReady.lat, longitude: this.props.geoReady.lng},
         {latitude: this.props.hang.lat, longitude: this.props.hang.lng}

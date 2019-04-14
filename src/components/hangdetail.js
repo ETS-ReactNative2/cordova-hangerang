@@ -20,7 +20,7 @@ class HangDetail extends React.Component {
       geoCheck: false
     }
     this.onHangChange = this.onHangChange.bind(this);
-    this.getPlaceKey = this.getPlaceKey.bind(this);
+    //this.getPlaceKey = //this.getPlaceKey.bind(this);
   }
 
   setAddress = (address) => this.setState({ address })
@@ -66,7 +66,7 @@ class HangDetail extends React.Component {
               state: 'hang',
               keepKeys: true
             });
-            this.getPlaceKey(this.state.hang.place);
+            //this.getPlaceKey(this.state.hang.place);
           }
         }
       });

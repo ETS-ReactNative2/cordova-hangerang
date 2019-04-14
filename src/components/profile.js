@@ -20,7 +20,6 @@ class Profile extends React.Component {
   }
 
   componentDidMount(){
-    console.log(this.props);
     if(this.props.uid){
       const usersRef = firebase.database().ref('members');
       usersRef.orderByChild("uid").equalTo(this.props.uid).once('value', (snapshot) => {
@@ -68,7 +67,9 @@ class Profile extends React.Component {
             <hr />
             <div className="user-profile-contact">
               <div className='small'><i className='fa fa-envelope'></i> {member.email}</div>
-              <div className='small'><i className='fa fa-phone'></i> {member.tel}</div>
+              {member.tel &&
+                <div className='small'><i className='fa fa-phone'></i> {member.tel}</div>
+              }
             </div>
             <hr />
             <div className="capsules">

@@ -31,12 +31,18 @@ class GroupsEdit extends React.Component {
         usersRef.orderByChild("uid").equalTo(uid).once('value', (snapshot) => {
           if (snapshot.exists()) {
             let k = Object.keys(snapshot.val())[0];
-            const groupRef = firebase.database().ref(`/members/${k}/invite/`);
-            groupRef.orderByChild("groupid").equalTo(this.props.id).once('value', (snapshot) => {
+            const inviteRef = firebase.database().ref(`/members/${k}/invite/`);
+            inviteRef.orderByChild("groupid").equalTo(this.props.id).once('value', (snapshot) => {
               if (snapshot.exists()) {
-                let groupkey = Object.keys(snapshot.val())[0];
-                console.log(groupkey);
-                base.remove(`/members/${k}/invite/${groupkey}`);
+                let invitekey = Object.keys(snapshot.val())[0];
+                base.remove(`/members/${k}/invite/${invitekey}`);
+              }
+            });
+            const groupsRef = firebase.database().ref(`/members/${k}/groups/`);
+            groupsRef.orderByChild("id").equalTo(this.props.id).once('value', (snapshot) => {
+              if (snapshot.exists()) {
+                let groupskey = Object.keys(snapshot.val())[0];
+                base.remove(`/members/${k}/groups/${groupskey}`);
               }
             });
           }
@@ -72,23 +78,30 @@ class GroupsEdit extends React.Component {
       members = Object.entries(group.members);
       members = members.concat(selectedOption);
     }
+
     let groupname = group.name;
     if(group.name !== name){
      groupname = name;
     }
+
     const updatedgroup = {
       description: description,
       name: groupname,
       owner: uid,
       members: {}
     }
+
     groupsRef.update(updatedgroup);
 
     const groupMembersRef = firebase.database().ref(`/groups/${id}/members`);
     Object.entries(members).map((user) => {
-      user = user[1];
-      groupMembersRef.push(user);
-      return console.log("user");
+      user = Object.entries(user);
+      if(user[1][1] && user[1][1].length === 2){
+        groupMembersRef.push(user[1][1][1]); //I really hate this...
+      }else{
+        groupMembersRef.push(user[1][1]); //And this shit...
+      }
+      return console.log("user added");
     });
 
     this.setState({
@@ -124,45 +137,14 @@ class GroupsEdit extends React.Component {
               var user = snapshot.val();
               var key = Object.keys(snapshot.val())[0];
               var crew = user[key]['crew'];
+              var options = [];
               if(crew){
                 Object.entries(crew).map((c,i) => {
                   let member = c[1];
                   let arr = group.members;
                   arr = Object.keys(arr).filter(Boolean);
                   if( arr.findIndex(o => o.user === member.user) === -1 ){
-                    this.setState(prevState => ({
-                      options: [...prevState.options,
-                        {
-                          label: member.user,
-                          status: 'invited',
-                          user: member.user,
-                          uid: member.uid,
-                          userphoto: member.userphoto,
-                          value: slugify(member.user),
-                        }
-                      ]
-                    }));
-                  }
-                  this.setState(prevState => ({
-                    options: _.uniqBy(...prevState.options, 'uid')
-                  }));
-                  return console.log("c");
-                });
-              }
-            }
-          });
-        }else{
-          const optionsRef = firebase.database().ref('members');
-          optionsRef.orderByChild("uid").equalTo(this.props.uid).once('value', (snapshot) => {
-            if (snapshot.exists()) {
-              var user = snapshot.val();
-              var key = Object.keys(snapshot.val())[0];
-              var crew = user[key]['crew'];
-              if(crew){
-                Object.entries(crew).map((c,i) => {
-                  let member = c[1];
-                    this.setState(prevState => ({
-                    options: [...prevState.options,
+                    options.push(
                       {
                         label: member.user,
                         status: 'invited',
@@ -171,10 +153,39 @@ class GroupsEdit extends React.Component {
                         userphoto: member.userphoto,
                         value: slugify(member.user),
                       }
-                    ]
-                  }));
+                    );
+                  }
                   return console.log("c");
                 });
+                this.setState({ options: options });
+              }
+            }
+            // this.setState(prevState => ({
+            //   options: _.uniqBy(...prevState.options, 'uid')
+            // }));
+          });
+        }else{
+          const optionsRef = firebase.database().ref('members');
+          optionsRef.orderByChild("uid").equalTo(this.props.uid).once('value', (snapshot) => {
+            if (snapshot.exists()) {
+              var user = snapshot.val();
+              var key = Object.keys(snapshot.val())[0];
+              var crew = user[key]['crew'];
+              var options = [];
+              if(crew){
+                Object.entries(crew).map((c,i) => {
+                  let member = c[1];
+                  options.push({
+                    label: member.user,
+                    status: 'invited',
+                    user: member.user,
+                    uid: member.uid,
+                    userphoto: member.userphoto,
+                    value: slugify(member.user),
+                  });
+                  return console.log("c");
+                });
+                this.setState({ options: options });
               }
             }
           });
@@ -200,6 +211,7 @@ class GroupsEdit extends React.Component {
       owner,
       name,
       selectedOption,
+      options,
     } = this.state;
 
     let Members = '';
@@ -263,7 +275,7 @@ class GroupsEdit extends React.Component {
                 value={selectedOption}
                 placeholder={'Choose group Members...'}
                 onChange={this.handleOptionChange}
-                options={this.state.options}
+                options={options}
                 isMulti={true}
               />
             }

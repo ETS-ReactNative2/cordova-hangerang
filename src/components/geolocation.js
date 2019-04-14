@@ -13,7 +13,7 @@ class Geolocation extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      getGeo: false,
+      getGeo: true,
       address: this.props.address,
       movies: []
     }
@@ -40,7 +40,8 @@ class Geolocation extends React.Component {
 
   getLocByIp(){
     //let ipaddr = '73.42.126.133';
-    let ipaddr = ip.address();
+    let ipaddr = window.userip;
+    //let ipaddr = '';
     iplocation(ipaddr)
     .then((res) => {
       if(res.latitude && res.longitude){
@@ -75,7 +76,6 @@ class Geolocation extends React.Component {
     let usersRef = firebase.database().ref('members');
     let usersGeoRef = firebase.database().ref('members-gl');
     let geoUser = new GeoFire(usersGeoRef);
-
     usersRef.orderByChild("uid").equalTo(user.uid).once('value', (snapshot) => {
       if (snapshot.exists()) {
         var key = Object.keys(snapshot.val())[0];
@@ -84,7 +84,7 @@ class Geolocation extends React.Component {
             //this.getEventful(lat, lng);
             //kMliRxAqc49wNf6jmtxJLRBYAqW2Tr
             //GHL45LeU1QhCh7bzT8BiC0hwZ3z8xT
-            var client = new Client({access_token: "kMliRxAqc49wNf6jmtxJLRBYAqW2Tr"});
+            var client = new Client({access_token: "GHL45LeU1QhCh7bzT8BiC0hwZ3z8xT"});
             let m = mmnt();
             client.events.search({
               'limit': 25,
@@ -96,6 +96,7 @@ class Geolocation extends React.Component {
             .then((r) => {
                 let results = r.result.results;
                 results = this.uniq(results, "title");
+                results = results.filter(obj => {return obj.state !== 'deleted' });
                 this.props.setNearEvents({ results });
                 return;
             }).catch(function(error){

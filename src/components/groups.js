@@ -30,74 +30,84 @@ class Groups extends React.Component {
     }
 
     getGroups(){
-      if(this.props.uid){
-        const usersRef = firebase.database().ref('members');
-        usersRef.orderByChild("uid").equalTo(this.props.uid).once('value', (snapshot) => {
-          if (snapshot.exists()) {
-            var key = Object.keys(snapshot.val())[0];
-            base.listenTo(`/members/${key}`, {
-              context: this,
-              then(member){
-                console.log('A change has happened!');
-                if(member.invite){
-                  Object.entries(member.invite).map((item) => {
-                    if(item[1].type === 'group'){
-                      const groupsRef = firebase.database().ref(`/groups/${item[1].groupid}`);
-                      groupsRef.once('value',
-                        (snapshot) => {
-                          if (snapshot.exists()) {
-                            let index = this.state.invited.findIndex(el => el.key === item[1].groupid);
-                            if(index === -1){
-                              this.setState({ invited: [...this.state.invited, {key: item[1].groupid, value: snapshot.val()} ] });
-                            }
-                          }
-                      });
-                    }
-                    return console.log("item");
-                  });
-                }
-                if(member.groups){
-                  Object.entries(member.groups).map((item) => {
-                    const groupsRef = firebase.database().ref(`/groups/${item[1].id}`);
-                    groupsRef.once('value',
-                      (snapshot) => {
-                          if (snapshot.exists()) {
-                            let index = this.state.joined.findIndex(el => el.key === item[1].id);
-                            if(index === -1){
-                              this.setState({ joined: [...this.state.joined, {key: item[1].id, value: snapshot.val()} ] });
-                            }
-                          }
-                      });
-                      return console.log("item");
-                  });
-                }
-                if(member.owned){
-                  Object.entries(member.owned).map((item) => {
-                    const groupsRef = firebase.database().ref(`/groups/${item[1].id}`);
-                    groupsRef.once('value',
-                      (snapshot) => {
-                        if (snapshot.exists()) {
-                          let index = this.state.owned.findIndex(el => el.key === item[1].id);
-                          if(index === -1){
-                            this.setState({ owned: [...this.state.owned, {key: item[1].id, value: snapshot.val()} ] });
-                          }
+      if(this.props.userkey){
+        base.listenTo(`/members/${this.props.userkey}`, {
+          context: this,
+          then(member){
+            console.log('A change has happened!');
+            if(member.invite){
+              Object.entries(member.invite).map((item) => {
+                if(item[1].type === 'group'){
+                  const groupsRef = firebase.database().ref(`/groups/${item[1].groupid}`);
+                  groupsRef.once('value',
+                    (snapshot) => {
+                      if (snapshot.exists()) {
+                        let index = this.state.invited.findIndex(el => el.key === item[1].groupid);
+                        if(index === -1){
+                          this.setState({ invited: [...this.state.invited, {key: item[1].groupid, value: snapshot.val()} ] });
                         }
-                      });
-                      return console.log("item");
+                      }
                   });
                 }
-              }
-            });
+                return console.log("item");
+              });
+            }else{
+              this.setState({invited: []});
+            }
+            if(member.groups){
+              Object.entries(member.groups).map((item) => {
+                const groupsRef = firebase.database().ref(`/groups/${item[1].id}`);
+                groupsRef.once('value',
+                  (snapshot) => {
+                      if (snapshot.exists()) {
+                        let index = this.state.joined.findIndex(el => el.key === item[1].id);
+                        if(index === -1){
+                          this.setState({ joined: [...this.state.joined, {key: item[1].id, value: snapshot.val()} ] });
+                        }
+                      }
+                  });
+                  return console.log("item");
+              });
+            }else{
+              this.setState({joined: []});
+            }
+            if(member.owned){
+              Object.entries(member.owned).map((item) => {
+                const groupsRef = firebase.database().ref(`/groups/${item[1].id}`);
+                groupsRef.once('value',
+                  (snapshot) => {
+                    if (snapshot.exists()) {
+                      let index = this.state.owned.findIndex(el => el.key === item[1].id);
+                      if(index === -1){
+                        this.setState({ owned: [...this.state.owned, {key: item[1].id, value: snapshot.val()} ] });
+                      }
+                    }
+                  });
+                  return console.log("item");
+              });
+            }else{
+              this.setState({owned: []});
+            }
           }
         });
       }
     }
 
     componentDidMount(){
+      this.setState({
+          invited: [],
+          joined: [],
+          owned: [],
+      });
       this.getGroups();
     }
 
     componentDidChange(){
+      this.setState({
+          invited: [],
+          joined: [],
+          owned: [],
+      });
       this.getGroups();
     }
 

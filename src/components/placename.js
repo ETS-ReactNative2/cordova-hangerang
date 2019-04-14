@@ -20,7 +20,7 @@ class GooglePlaceName extends React.Component {
   render() {
     return (
       <span className="placename">
-        {this.getPlaceDetails(this.props.placeid)}
+        {//this.getPlaceDetails(this.props.placeid)}
         {this.state.name}
       </span>
     )
